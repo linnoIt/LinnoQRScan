@@ -1,0 +1,22 @@
+{
+  "name": "QRScan",
+  "version": "0.1.0",
+  "summary": "A short description of QRScan.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/linnoIt/QRScan",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "linnoIt": "it@linno.cn"
+  },
+  "source": {
+    "git": "https://github.com/linnoIt/QRScan.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "10.0"
+  },
+  "source_files": "QRScan/Classes/**/*"
+}

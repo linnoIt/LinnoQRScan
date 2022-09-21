@@ -1,0 +1,6 @@
+framework module QRScan {
+  umbrella header "QRScan-umbrella.h"
+
+  export *
+  module * { export * }
+}
