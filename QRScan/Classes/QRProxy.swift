@@ -29,19 +29,30 @@ open class QRProxy: NSObject {
  
     private var kFpsNum: Int?
     
+    private var kScanState: Int?
+    
     /**
-     - parameter : bounds it's pixels captured by the screen
-     - parameter : showView add AVCaptureVideoPreviewLayer
-     - parameter : Collect fpsNum times and output once ,default is 10, if fpsNum = 1 show once pixels captured
-     - parameter : outPut result tuple with String & QRState
+    convenience init
+     - parameter bounds: it's pixels captured by the screen
+     - parameter showView: add AVCaptureVideoPreviewLayer
+     - parameter fpsNum: Collect fpsNum times and output once ,default is 1, if fpsNum = 10  scan 10 fps show pixels captured
+     - parameter sanState: choose enum QRState
+     - parameter outPut:  result tuple with String & QRState
      */
-    public convenience init(bounds: CGRect , showView:UIView ,fpsNum: Int = 10 ,outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
+    public convenience init(bounds: CGRect , showView:UIView ,fpsNum: Int = 1 , sanState:QRState = .All, outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
         self.init()
         self.kBounds = bounds
         self.kShowView = showView
         self.kFpsNum = fpsNum
+        // fps max is 60, 1s = 30fps
+        if fpsNum > 60 {
+            self.kFpsNum = 60
+        }
+        if fpsNum <= 0 {
+            self.kFpsNum = 1
+        }
         self.kSingleClosure = outPut
-        setBounds()
+        setBounds(scanState: sanState)
     }
     
     public func stopCurrentDevice(){
@@ -52,13 +63,15 @@ open class QRProxy: NSObject {
     }
     
     
-    private func setBounds(){
+    private func setBounds(scanState:QRState){
+        captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes(scanState: scanState)
         videoPreviewLayer?.frame = kBounds
         kShowView.layer.addSublayer(videoPreviewLayer!)
         captureSession.startRunning()
               // 这里必须使用bounds 否则定位会出错
         let interRect = videoPreviewLayer?.metadataOutputRectConverted(fromLayerRect: videoPreviewLayer!.bounds)
         captureMetadataOutput.rectOfInterest = interRect!
+        
     }
     
     private override init() {
@@ -82,7 +95,7 @@ open class QRProxy: NSObject {
             captureSession.addOutput(captureMetadataOutput)
             // Set delegate and use the default dispatch queue to execute the call back
             captureMetadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-            captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes()
+//
         } catch {
             // If any error occurs, simply print it out and don't continue any more.
             print(error)
@@ -127,7 +140,7 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
             var btnTag = 100
             for metadataItem  in maxAVMetadataObject! {
                 let metadataObj = metadataItem as! AVMetadataMachineReadableCodeObject
-                if QRModel.supportedCodeTypes().contains(metadataObj.type) {
+                if QRModel.supportedCodeTypes(scanState: .All).contains(metadataObj.type) {
                     let barCodeObject = videoPreviewLayer?.transformedMetadataObject(for: metadataObj)
                     let btn = UrlButton.init(frame: barCodeObject!.bounds)
                     //  y 值需加上信息栏的高度

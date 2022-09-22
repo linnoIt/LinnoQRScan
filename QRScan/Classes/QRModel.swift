@@ -14,10 +14,11 @@ import AVFoundation
 public enum QRState {
     case Barcodes
     case Codes2D
+    case Bodies
+    case All
 }
 
 struct QRModel {
-    
     static let statuHeight:CGFloat = {
         if #available(iOS 13.0, *) {
             let set = UIApplication.shared.connectedScenes
@@ -39,28 +40,110 @@ struct QRModel {
       }
         return UIDeviceOrientation.unknown
     }
-    static func supportedCodeTypes()->[AVMetadataObject.ObjectType]{[
+    
+    @available(iOS 13.0, *)
+    private static func supportedCodeTypesCodesBodies() -> [AVMetadataObject.ObjectType]{[
+        /** 人脸识别？*/
+        .humanBody,
+        .dogBody,
+        .dogBody
+    ]}
+    private static func supportedCodeTypesCodes2D()->[AVMetadataObject.ObjectType]{
+        /** 二维码 */
+        if #available(iOS 15.4, *){
+            return [.pdf417,
+                    .dataMatrix,
+                    .aztec,
+                    .qr,
+                    .microPDF417,
+                    .microQR]
+            
+        }else{
+            return  [.pdf417,
+                    .dataMatrix,
+                    .aztec,
+                    .qr,]
+        }
+    }
+   private static func supportedCodeTypesBarcodes()->[AVMetadataObject.ObjectType]{
         /** 条形码*/
-        AVMetadataObject.ObjectType.upce,
-        AVMetadataObject.ObjectType.code39,
-        AVMetadataObject.ObjectType.code39Mod43,
-        AVMetadataObject.ObjectType.code93,
-        AVMetadataObject.ObjectType.code128,
-        AVMetadataObject.ObjectType.ean8,
-        AVMetadataObject.ObjectType.ean13,
-        AVMetadataObject.ObjectType.itf14,
-        AVMetadataObject.ObjectType.interleaved2of5,
-         /** 二维码 */
-        AVMetadataObject.ObjectType.pdf417,
-        AVMetadataObject.ObjectType.dataMatrix,
-        AVMetadataObject.ObjectType.aztec,
-        AVMetadataObject.ObjectType.qr]
+        if #available(iOS 15.4, *){
+            return [.codabar,
+                    .code39,
+                    .code39Mod43,
+                    .code93,
+                    .code128,
+                    .ean8,
+                    .ean13,
+                    .gs1DataBar,
+                    .gs1DataBarLimited,
+                    .gs1DataBarExpanded,
+                    .itf14,
+                    .interleaved2of5,
+                    .upce]
+        }else{
+            return [
+                .code39,
+                .code39Mod43,
+                .code93,
+                .code128,
+                .ean8,
+                .ean13,
+                .itf14,
+                .interleaved2of5,
+                .upce]
+            
+        }
+    }
+    static func supportedCodeTypes(scanState:QRState)->[AVMetadataObject.ObjectType]{
+        var res:[AVMetadataObject.ObjectType] = []
+        switch scanState {
+        case .Barcodes:
+            res = supportedCodeTypesBarcodes()
+        case .Codes2D:
+            res = supportedCodeTypesCodes2D()
+        case .Bodies:
+            if #available(iOS 13.0, *) {
+                res = supportedCodeTypesCodesBodies()
+            }
+        case .All:
+            res.append(contentsOf: supportedCodeTypesBarcodes())
+            res.append(contentsOf: supportedCodeTypesCodes2D())
+            if #available(iOS 13.0, *) {
+                res.append(contentsOf: supportedCodeTypesCodesBodies())
+            }
+                // Fallback on earlier versions
+        }
+        return res
     }
     static func coderState(objType:AVMetadataObject.ObjectType) -> QRState{
-        if (objType == .pdf417 || objType == .qr || objType == .dataMatrix || objType == .aztec) {
-            return .Codes2D
+        if #available(iOS 15.4, *){
+            switch objType {
+            case .pdf417, .qr, .dataMatrix, .aztec, .microQR, .microPDF417: do {
+                    return QRState.Codes2D
+                }
+            case .humanBody, .catBody, .dogBody :do {
+                    return QRState.Bodies
+                }
+            default:do {
+                    return QRState.Barcodes
+                }
+            }
+        }else{
+            switch objType {
+            case .pdf417, .qr, .dataMatrix, .aztec: do {
+                    return QRState.Codes2D
+                }
+            default:do {
+                if #available(iOS 13.0, *) {
+                    if objType == .humanBody || objType == .catBody || objType == .dogBody {
+                        return QRState.Bodies
+                    }
+                }
+                return QRState.Barcodes
+                }
+            }
         }
-        return .Barcodes
     }
     static func feedbackGenerator() {
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)       
@@ -69,11 +152,11 @@ struct QRModel {
     
     static func singleOutput(metadataObjects:[AVMetadataObject]) -> (kString:String,kState: QRState){
         let metadataObj = metadataObjects.first as! AVMetadataMachineReadableCodeObject
-        if QRModel.supportedCodeTypes().contains(metadataObj.type) {
+//        if QRModel.supportedCodeTypes().contains(metadataObj.type) {
             if metadataObj.stringValue != nil {
                 return (metadataObj.stringValue! ,QRModel.coderState(objType: metadataObj.type))
             }
-        }
+//        }
         return ("12345678->测试数据",.Barcodes)
     }
 }
