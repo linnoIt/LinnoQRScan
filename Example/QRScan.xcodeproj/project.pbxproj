@@ -30,7 +30,7 @@
 /* Begin PBXFileReference section */
 		062BC7CF671ECD99D2F375AD /* Pods-QRScan_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QRScan_Example.release.xcconfig"; path = "Target Support Files/Pods-QRScan_Example/Pods-QRScan_Example.release.xcconfig"; sourceTree = "<group>"; };
 		0FA410470E4F8AFE284B8CD0 /* Pods_QRScan_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_QRScan_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		17854A0034A710D93D9A3C41 /* QRScan.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = QRScan.podspec; path = ../QRScan.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		17854A0034A710D93D9A3C41 /* LinnoQRScan.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LinnoQRScan.podspec; path = ../LinnoQRScan.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		41505F77F20A296310DE7A7F /* Pods_QRScan_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_QRScan_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD01AFB9204008FA782 /* QRScan_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QRScan_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -143,7 +143,7 @@
 		607FACF51AFB993E008FA782 /* Podspec Metadata */ = {
 			isa = PBXGroup;
 			children = (
-				17854A0034A710D93D9A3C41 /* QRScan.podspec */,
+				17854A0034A710D93D9A3C41 /* LinnoQRScan.podspec */,
 				E2FA26F8CC9CB0D68B78F018 /* README.md */,
 				D6FBA4478D4DAF6D54A86F34 /* LICENSE */,
 			);
@@ -501,7 +501,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = M5QSWNN53L;
 				INFOPLIST_FILE = QRScan/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
@@ -518,7 +518,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = M5QSWNN53L;
 				INFOPLIST_FILE = QRScan/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";

@@ -17,6 +17,8 @@ open class QRProxy: NSObject {
     
     private var captureMetadataOutput = AVCaptureMetadataOutput()
     
+    private var device : AVCaptureDevice?
+    
     private var kBounds = UIScreen.main.bounds
     
     private var kShowView : UIView!
@@ -61,6 +63,12 @@ open class QRProxy: NSObject {
     public func startCurrentDevice(){
         captureSession.startRunning()
     }
+    // 
+    public func trunOffDevice(touchMode: AVCaptureDevice.TorchMode){
+        try? device?.lockForConfiguration()
+        device?.torchMode = touchMode
+        device?.unlockForConfiguration()
+    }
     
     
     private func setBounds(scanState:QRState){
@@ -81,6 +89,7 @@ open class QRProxy: NSObject {
             return
         }
         do {
+            device = captureDevice
             try captureDevice.lockForConfiguration()
             captureDevice.focusMode = .continuousAutoFocus
             captureDevice.unlockForConfiguration()

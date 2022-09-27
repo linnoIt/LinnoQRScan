@@ -1,9 +1,9 @@
 # QRScan
 
-[![CI Status](https://img.shields.io/travis/linnoIt/QRScan.svg?style=flat)](https://travis-ci.org/linnoIt/QRScan)
-[![Version](https://img.shields.io/cocoapods/v/QRScan.svg?style=flat)](https://cocoapods.org/pods/QRScan)
-[![License](https://img.shields.io/cocoapods/l/QRScan.svg?style=flat)](https://cocoapods.org/pods/QRScan)
-[![Platform](https://img.shields.io/cocoapods/p/QRScan.svg?style=flat)](https://cocoapods.org/pods/QRScan)
+[![CI Status](https://img.shields.io/travis/linnoIt/LinnoQRScan.svg?style=flat)](https://travis-ci.org/linnoIt/LinnoQRScan)
+[![Version](https://img.shields.io/cocoapods/v/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
+[![License](https://img.shields.io/cocoapods/l/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
+[![Platform](https://img.shields.io/cocoapods/p/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
 
 ## Example
 
@@ -17,7 +17,7 @@ QRScan is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'QRScan'
+pod 'LinnoQRScan'
 ```
 
 ## Author
