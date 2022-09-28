@@ -9,6 +9,7 @@ import Foundation
 import AVFoundation
 import UIKit
 
+
 open class QRProxy: NSObject {
     
     private var captureSession = AVCaptureSession()
@@ -23,7 +24,7 @@ open class QRProxy: NSObject {
     
     private var kShowView : UIView!
     
-    private var kSingleClosure:(((kString:String, kState:QRState)?) -> Void)?
+    private var kSingleClosure:(((kString:String, kState:QRState)) -> Void)?
     
     private var tagArray: Array<Int> = []
     
@@ -32,17 +33,59 @@ open class QRProxy: NSObject {
     private var kFpsNum: Int?
     
     private var kScanState: Int?
-    
+
+    public static var currentView: UIView { QRModel.currentViewController().view }
+
+    public static var currentBounds: CGRect {currentView.bounds }
+
     /**
-    convenience init
+     swift convenience init
      - parameter bounds: it's pixels captured by the screen
      - parameter showView: add AVCaptureVideoPreviewLayer
      - parameter fpsNum: Collect fpsNum times and output once ,default is 1, if fpsNum = 10  scan 10 fps show pixels captured
      - parameter sanState: choose enum QRState
      - parameter outPut:  result tuple with String & QRState
      */
-    public convenience init(bounds: CGRect , showView:UIView ,fpsNum: Int = 1 , sanState:QRState = .All, outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
+    
+    public convenience init(bounds: CGRect = currentBounds, showView:UIView = currentView ,fpsNum: Int = 1 , sanState:QRState = .All, outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
         self.init()
+        attributeSet(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState: sanState)
+        self.kSingleClosure = outPut
+    }
+    /**
+     no  parameter  convenience init
+     showView = current view
+     bounds = current view bounds
+     fpsNum = 1
+     sanState = (swift = all) (oc = 4)
+     */
+    @objc public convenience init(outPut:@escaping ( _ kString: String,  _ kState:Int)-> Void){
+        self.init()
+        attributeSet(bounds: Self.currentBounds, showView: Self.currentView, fpsNum: 1, scanState: .All)
+        self.kSingleClosure = {kResult in
+            outPut(kResult.kString,kResult.kState.rawValue)
+        }
+    }
+    
+    /**  oc  convenience init
+     - parameter bounds: it's pixels captured by the screen
+     - parameter showView: add AVCaptureVideoPreviewLayer
+     - parameter fpsNum: Collect fpsNum times and output once ,default is 1, if fpsNum = 10  scan 10 fps show pixels captured
+     - parameter sanState: scanState is int = QRState 1~4
+     - parameter outPut:  result = String & QRState
+        */
+    @objc public convenience init( bounds: CGRect = currentBounds,  showView:UIView = currentView, fpsNum: Int = 1, scanState:Int = 4, outPut:@escaping (_ kString: String, _ kState:Int)-> Void){
+        self.init()
+        attributeSet(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState:  QRState(rawValue: scanState) ?? .All)
+        self.kSingleClosure = { kResult in
+            outPut(kResult.kString,kResult.kState.rawValue)
+        }
+    }
+    private func attributeSet(bounds:CGRect,showView:UIView,fpsNum:Int,scanState:QRState){
+        guard QRModel.isAuther() else {
+            return
+        }
+        setUI()
         self.kBounds = bounds
         self.kShowView = showView
         self.kFpsNum = fpsNum
@@ -53,25 +96,6 @@ open class QRProxy: NSObject {
         if fpsNum <= 0 {
             self.kFpsNum = 1
         }
-        self.kSingleClosure = outPut
-        setBounds(scanState: sanState)
-    }
-    
-    public func stopCurrentDevice(){
-        captureSession.stopRunning()
-    }
-    public func startCurrentDevice(){
-        captureSession.startRunning()
-    }
-    // 
-    public func trunOffDevice(touchMode: AVCaptureDevice.TorchMode){
-        try? device?.lockForConfiguration()
-        device?.torchMode = touchMode
-        device?.unlockForConfiguration()
-    }
-    
-    
-    private func setBounds(scanState:QRState){
         captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes(scanState: scanState)
         videoPreviewLayer?.frame = kBounds
         kShowView.layer.addSublayer(videoPreviewLayer!)
@@ -82,10 +106,29 @@ open class QRProxy: NSObject {
         
     }
     
-    private override init() {
-        super.init()
+    @objc public func stopCurrentDevice(){
+        captureSession.stopRunning()
+    }
+    @objc public func startCurrentDevice(){
+        captureSession.startRunning()
+    }
+    /** install flash on off*/
+    @objc public func trunOffDevice(touchMode: AVCaptureDevice.TorchMode){
+        var mode:AVCaptureDevice.TorchMode = touchMode
+        if mode == .auto{
+            mode = isFlashed() ? .off : .on
+        }
+        try? device?.lockForConfiguration()
+        device?.torchMode = mode
+        device?.unlockForConfiguration()
+    }
+    
+    @objc public func isFlashed() -> Bool{
+        return device?.isTorchActive ?? false
+    }
+    private func setUI(){
         guard let captureDevice = AVCaptureDevice.default(for: AVMediaType.video) else {
-            print("Failed to get the camera device")
+            QRModel.showError()
             return
         }
         do {
@@ -116,6 +159,13 @@ open class QRProxy: NSObject {
         videoPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
         captureMetadataOutput.rectOfInterest = CGRect(x: 0.2, y: 0.2, width: 0.8, height: 0.8)
 //        view.layer.bounds
+    }
+    
+    private override init() {
+        super.init()
+    }
+    deinit{
+        print("QRProxy -> deinit")
     }
 }
 extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
@@ -154,7 +204,7 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
                     let btn = UrlButton.init(frame: barCodeObject!.bounds)
                     //  y 值需加上信息栏的高度
                     //  x 值计算采集区域的大小和展示view的偏差
-                    btn.frame.origin.y += (kShowView.bounds.width)/2 + QRModel.statuHeight
+                    btn.frame.origin.y += (kShowView.bounds.width)/2 + QRModel.statuHeight()
                     btn.frame.origin.x += (kShowView.frame.width - kBounds.width) / 2
                     /// 因为采集到的条形码的高度都在1.3左右，所以设置条形码的高度和位置
                     if QRModel.coderState(objType: metadataObj.type) == .Barcodes {
@@ -184,10 +234,11 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
         maxNumAVMetadataObjectArray.removeAll(keepingCapacity: true)
         tagArray.removeAll(keepingCapacity: true)
         if kSingleClosure != nil {
-            kSingleClosure!((btn.url,btn.qrState) as? (kString: String, kState: QRState))
+            kSingleClosure!((btn.url,btn.qrState) as! (kString: String, kState: QRState))
         }
     }
 }
+
 
 fileprivate class UrlButton: UIButton {
 

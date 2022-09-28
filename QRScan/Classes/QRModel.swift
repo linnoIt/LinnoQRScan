@@ -11,15 +11,60 @@ import UIKit
 import AVFoundation
 
 
-public enum QRState {
-    case Barcodes
-    case Codes2D
-    case Bodies
-    case All
+public enum QRState:Int {
+    case Barcodes = 1
+    case Codes2D = 2
+    case Bodies = 3
+    case All = 4
+    public init?(rawValue: Int) {
+        var kState:QRState
+        switch rawValue {
+        case 1: kState = .Barcodes
+        case 2: kState = .Codes2D
+        case 3: kState = .Bodies
+        default:
+            kState = .All
+        }
+        self = kState
+    }
 }
 
+
+
 struct QRModel {
-    static let statuHeight:CGFloat = {
+     static func isAuther() -> Bool{
+        let deviceStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        guard deviceStatus == .authorized  else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                DispatchQueue.main.async {
+                    QRModel.currentViewController().dismiss(animated: true) {
+                        let alertView = UIAlertController.init(title: "Error", message: "No camera permission was granted", preferredStyle: .alert)
+                        let doneAction = UIAlertAction.init(title: "Done", style: .default) { _ in
+                            let url:URL = URL(string:UIApplicationOpenSettingsURLString)!
+                            UIApplication.shared.open(url)
+                        }
+                        let cancelAction = UIAlertAction.init(title: "cancel", style: .cancel)
+                        alertView.addAction(doneAction)
+                        alertView.addAction(cancelAction)
+                        QRModel.currentViewController().present(alertView, animated: true)
+                    }
+                }
+            }
+            return false
+        }
+        return true
+    }
+    static func showError(){
+        QRModel.currentViewController().dismiss(animated: true) {
+            let alertView = UIAlertController.init(title: "Error", message: "Failed to get the camera device", preferredStyle: .alert)
+            let doneAction = UIAlertAction.init(title: "Done", style: .default) { _ in
+                QRModel.currentViewController().dismiss(animated: true)
+            }
+            alertView.addAction(doneAction)
+            QRModel.currentViewController().present(alertView, animated: true)
+        }
+    }
+    static func statuHeight() -> CGFloat {
         if #available(iOS 13.0, *) {
             let set = UIApplication.shared.connectedScenes
             let windowScene = set.first as! UIWindowScene
@@ -27,7 +72,52 @@ struct QRModel {
         } else {
             return UIApplication.shared.statusBarFrame.size.height;
         }
-    }()
+    }
+    static func currentViewController() -> UIViewController  {
+        func current(base: UIViewController) -> UIViewController? {
+            if let nav = base as? UINavigationController {
+                return current(base: nav.visibleViewController!)
+            }
+            if let tab = base as? UITabBarController {
+                return current(base: tab.selectedViewController!)
+            }
+            if let presented = base.presentedViewController {
+                return current(base: presented)
+            }
+            if let split = base as? UISplitViewController{
+                return current(base: split.presentingViewController!)
+            }
+            return base
+        }
+        return current(base: (currentWindow()?.rootViewController)!)!
+    }
+    static  func currentWindow() -> UIWindow? {
+        if #available(iOS 14.0, *) {
+            if let window = UIApplication.shared.connectedScenes
+                .map({$0 as? UIWindowScene})
+                .compactMap({$0})
+                .first?.windows.first {return window}
+            else if let window =  UIApplication.shared.delegate?
+                .window {return window}
+            else{ return nil }
+        } else if #available(iOS 13.0, *) {
+            if let window = UIApplication.shared.connectedScenes
+                .filter({$0.activationState == .foregroundActive})
+                .map({$0 as? UIWindowScene})
+                .compactMap({$0})
+                .first?.windows.filter({$0.isKeyWindow})
+                .first{ return window}
+            else if let window =  UIApplication.shared.delegate?
+                .window { return window}
+            else{ return nil }
+        }else{
+            if let window = UIApplication.shared.delegate?
+                .window {return window}
+            else{return nil
+                
+            }
+        }
+    }
     
     static func deviceOrientation(connection:AVCaptureConnection) -> UIDeviceOrientation{
         
