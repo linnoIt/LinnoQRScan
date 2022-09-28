@@ -173,17 +173,18 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
         guard  metadataObjects.count != 0 else{
             return
         }
-     
+        captureSession.stopRunning()
         // 快速扫描，每一帧都扫到
         guard kFpsNum != 1 else{
-            QRModel.feedbackGenerator()
+            self.feedbackGenerator()
             kSingleClosure!(QRModel.singleOutput(metadataObjects: metadataObjects))
+            captureSession.startRunning()
             return
         }
         // 每隔kFpsNum帧生成一次
         maxNumAVMetadataObjectArray.append(metadataObjects)
         if maxNumAVMetadataObjectArray.count >= kFpsNum! {
-            QRModel.feedbackGenerator()
+            self.feedbackGenerator()
             maxNumAVMetadataObjectArray = maxNumAVMetadataObjectArray.reversed()
             let maxAVMetadataObject = maxNumAVMetadataObjectArray.max { one, two in
                 one.count < two.count
@@ -192,10 +193,10 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
                 if kSingleClosure != nil {
                     kSingleClosure!(QRModel.singleOutput(metadataObjects: maxAVMetadataObject!))
                 }
+                captureSession.startRunning()
                 return
             }
             tagArray.removeAll()
-            captureSession.stopRunning()
             var btnTag = 100
             for metadataItem  in maxAVMetadataObject! {
                 let metadataObj = metadataItem as! AVMetadataMachineReadableCodeObject
@@ -238,7 +239,23 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
         }
     }
 }
-
+extension QRProxy{
+     func feedbackGenerator() {
+        var soundID:SystemSoundID = 0
+        //获取声音地址
+//         /Users/hanzc/Desktop/Moudle/QRScan/QRScan/Assets/success.wav
+         let bd = Bundle(for: self.classForCoder)
+         let path = bd.path(forResource: "success", ofType: "wav")
+        //地址转换
+        let baseURL = NSURL(fileURLWithPath: path!)
+        //赋值
+        AudioServicesCreateSystemSoundID(baseURL, &soundID)
+        //播放声音
+        AudioServicesPlaySystemSound(soundID)
+        //震动
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+    }
+}
 
 fileprivate class UrlButton: UIButton {
 

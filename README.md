@@ -1,12 +1,10 @@
 # QRScan
 
-[!
-    [Swift5.0](https://img.shields.io/cocoapods/p/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
+[![Swift_Version:5.0](https://img.shields.io/cocoapods/p/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
 [![Version](https://img.shields.io/cocoapods/v/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
-[!
-    [CIStatus](https://img.shields.io/travis/linnoIt/LinnoQRScan.svg?style=flat)](https://travis-ci.org/linnoIt/LinnoQRScan)
+[![CIStatus](https://img.shields.io/travis/linnoIt/LinnoQRScan.svg?style=flat)](https://travis-ci.org/linnoIt/LinnoQRScan)
 [![License](https://img.shields.io/cocoapods/l/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
-[![Platform](https://img.shields.io/cocoapods/p/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
+[![Platform:iOS 10.0](https://img.shields.io/cocoapods/p/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
 
 
 ## Example
@@ -17,6 +15,7 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 1.support object-c
 2.support quickly build
+3.scan success -> "di" 
 
 ## Installation
 

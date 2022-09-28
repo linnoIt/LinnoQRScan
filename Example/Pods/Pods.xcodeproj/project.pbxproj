@@ -27,6 +27,7 @@
 		875A310EAF4D0C136C3FFFF5E0335BE4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DA24A38BA9EE106B59E3D4C8DD1CE0E /* UIKit.framework */; };
 		8AE19756F0126FE92AF625E36F3D70FE /* UIImage+Compare.h in Headers */ = {isa = PBXBuildFile; fileRef = 656116C8FA5458F45D4707110C9530EC /* UIImage+Compare.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9D3C5E2F56838937146191468A893244 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E658F388F01C72599CA75537950B6095 /* XCTest.framework */; };
+		9F87F34F28E4338900771E64 /* success.wav in Resources */ = {isa = PBXBuildFile; fileRef = 9F87F34D28E4338900771E64 /* success.wav */; };
 		A8FC97DD04E6BD4AE6E2D740833D8205 /* Pods-QRScan_Example-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 24E23DB326AA1EC84FDC837DEFCB2994 /* Pods-QRScan_Example-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AEEAE69CB9380B2AA497A7829F92601D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 57221B54D014471C3D3E1925EFC917C8 /* Foundation.framework */; };
 		B52281F9F4340D4FC8ABB2FEB1FEC08E /* UIImage+Compare.m in Sources */ = {isa = PBXBuildFile; fileRef = 235A78CFFA6D8B8D86CACD733531CB13 /* UIImage+Compare.m */; };
@@ -106,6 +107,7 @@
 		96187BF3038121CC146335E9FF0B0AFF /* UIImage+Diff.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIImage+Diff.h"; path = "FBSnapshotTestCase/Categories/UIImage+Diff.h"; sourceTree = "<group>"; };
 		99A67367E018411D614EC8536A8A1C5B /* UIApplication+StrictKeyWindow.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIApplication+StrictKeyWindow.h"; path = "FBSnapshotTestCase/Categories/UIApplication+StrictKeyWindow.h"; sourceTree = "<group>"; };
 		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9F87F34D28E4338900771E64 /* success.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = success.wav; sourceTree = "<group>"; };
 		A20F97188460B9F5B0435FAC08B5F2B0 /* QRScan-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "QRScan-umbrella.h"; sourceTree = "<group>"; };
 		A362A5F2AE57875EA49107485F5A61B4 /* Pods-QRScan_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-QRScan_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		AE9FF9459FBCDC4AF88FB6B5A4CC1439 /* FBSnapshotTestController.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = FBSnapshotTestController.h; path = FBSnapshotTestCase/FBSnapshotTestController.h; sourceTree = "<group>"; };
@@ -203,6 +205,7 @@
 		4F8A196D8328C73B10BA6DBB6634487A /* QRScan */ = {
 			isa = PBXGroup;
 			children = (
+				9F87F34B28E4338900771E64 /* Assets */,
 				509D6372A72BB093ABA59E21EA443D4A /* QRModel.swift */,
 				3C72116D6F596A4C998ADCF7C67C5E7A /* QRProxy.swift */,
 				ED01A1DAB39D300436143590B5A8B5DF /* Pod */,
@@ -241,6 +244,15 @@
 				4F8A196D8328C73B10BA6DBB6634487A /* QRScan */,
 			);
 			name = "Development Pods";
+			sourceTree = "<group>";
+		};
+		9F87F34B28E4338900771E64 /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				9F87F34D28E4338900771E64 /* success.wav */,
+			);
+			name = Assets;
+			path = QRScan/Assets;
 			sourceTree = "<group>";
 		};
 		B69B2ECE2D2C9A3924A9231138CE0BBC /* Support Files */ = {
@@ -522,6 +534,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F87F34F28E4338900771E64 /* success.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -235,9 +235,7 @@ struct QRModel {
             }
         }
     }
-    static func feedbackGenerator() {
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)       
-    }
+
     
     
     static func singleOutput(metadataObjects:[AVMetadataObject]) -> (kString:String,kState: QRState){
