@@ -40,7 +40,7 @@ struct QRModel {
                     QRModel.currentViewController().dismiss(animated: true) {
                         let alertView = UIAlertController.init(title: "Error", message: "No camera permission was granted", preferredStyle: .alert)
                         let doneAction = UIAlertAction.init(title: "Done", style: .default) { _ in
-                            let url:URL = URL(string:UIApplication.openSettingsURLString)!
+                            let url:URL = URL(string:UIApplicationOpenSettingsURLString)!
                             UIApplication.shared.open(url)
                         }
                         let cancelAction = UIAlertAction.init(title: "cancel", style: .cancel)
