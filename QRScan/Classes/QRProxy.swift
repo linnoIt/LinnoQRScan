@@ -33,6 +33,8 @@ open class QRProxy: NSObject {
     private var kFpsNum: Int?
     
     private var kScanState: Int?
+    
+    private var kPlay: Bool = false
 
     public static var currentView: UIView { QRModel.currentViewController().view }
 
@@ -40,16 +42,17 @@ open class QRProxy: NSObject {
 
     /**
      swift convenience init
-     - parameter bounds: it's pixels captured by the screen
-     - parameter showView: add AVCaptureVideoPreviewLayer
+     - parameter bounds: it's pixels captured by the screen,The position is relative to the background page
+     - parameter showView: add AVCaptureVideoPreviewLayer, As a background page
      - parameter fpsNum: Collect fpsNum times and output once ,default is 1, if fpsNum = 10  scan 10 fps show pixels captured
      - parameter sanState: choose enum QRState
+     - parameter playSource: play success 'di' and shakes
      - parameter outPut:  result tuple with String & QRState
      */
     
-    public convenience init(bounds: CGRect = currentBounds, showView:UIView = currentView ,fpsNum: Int = 1 , sanState:QRState = .All, outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
+    public convenience init(bounds: CGRect = currentBounds, showView:UIView = currentView ,fpsNum: Int = 1 , sanState:QRState = .All, playSource:Bool = true, outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
         self.init()
-        attributeSet(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState: sanState)
+        attributeSet(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState: sanState, play: playSource)
         self.kSingleClosure = outPut
     }
     /**
@@ -58,10 +61,11 @@ open class QRProxy: NSObject {
      bounds = current view bounds
      fpsNum = 1
      sanState = (swift = all) (oc = 4)
+     playSource = true
      */
     @objc public convenience init(outPut:@escaping ( _ kString: String,  _ kState:Int)-> Void){
         self.init()
-        attributeSet(bounds: Self.currentBounds, showView: Self.currentView, fpsNum: 1, scanState: .All)
+        attributeSet(bounds: Self.currentBounds, showView: Self.currentView, fpsNum: 1, scanState: .All, play: true)
         self.kSingleClosure = {kResult in
             outPut(kResult.kString,kResult.kState.rawValue)
         }
@@ -74,14 +78,14 @@ open class QRProxy: NSObject {
      - parameter sanState: scanState is int = QRState 1~4
      - parameter outPut:  result = String & QRState
         */
-    @objc public convenience init( bounds: CGRect = currentBounds,  showView:UIView = currentView, fpsNum: Int = 1, scanState:Int = 4, outPut:@escaping (_ kString: String, _ kState:Int)-> Void){
+    @objc public convenience init( bounds: CGRect = currentBounds,  showView:UIView = currentView, fpsNum: Int = 1, scanState:Int = 4, playSource:Bool = true, outPut:@escaping (_ kString: String, _ kState:Int)-> Void){
         self.init()
-        attributeSet(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState:  QRState(rawValue: scanState) ?? .All)
+        attributeSet(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState:  QRState(rawValue: scanState) ?? .All, play: playSource)
         self.kSingleClosure = { kResult in
             outPut(kResult.kString,kResult.kState.rawValue)
         }
     }
-    private func attributeSet(bounds:CGRect,showView:UIView,fpsNum:Int,scanState:QRState){
+    private func attributeSet(bounds:CGRect,showView:UIView,fpsNum:Int,scanState:QRState,play:Bool){
         guard QRModel.isAuther() else {
             return
         }
@@ -96,12 +100,13 @@ open class QRProxy: NSObject {
         if fpsNum <= 0 {
             self.kFpsNum = 1
         }
+        self.kPlay = play
         captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes(scanState: scanState)
-        videoPreviewLayer?.frame = kBounds
+        videoPreviewLayer?.frame = showView.frame
         kShowView.layer.addSublayer(videoPreviewLayer!)
         captureSession.startRunning()
               // 这里必须使用bounds 否则定位会出错
-        let interRect = videoPreviewLayer?.metadataOutputRectConverted(fromLayerRect: videoPreviewLayer!.bounds)
+        let interRect = videoPreviewLayer?.metadataOutputRectConverted(fromLayerRect: bounds)
         captureMetadataOutput.rectOfInterest = interRect!
         
     }
@@ -178,7 +183,7 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
         guard kFpsNum != 1 else{
             self.feedbackGenerator()
             kSingleClosure!(QRModel.singleOutput(metadataObjects: metadataObjects))
-            captureSession.startRunning()
+                captureSession.startRunning()
             return
         }
         // 每隔kFpsNum帧生成一次
@@ -241,19 +246,14 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
 }
 extension QRProxy{
      func feedbackGenerator() {
-        var soundID:SystemSoundID = 0
-        //获取声音地址
-//         /Users/hanzc/Desktop/Moudle/QRScan/QRScan/Assets/success.wav
-         let bd = Bundle(for: self.classForCoder)
-         let path = bd.path(forResource: "success", ofType: "wav")
-        //地址转换
-        let baseURL = NSURL(fileURLWithPath: path!)
-        //赋值
-        AudioServicesCreateSystemSoundID(baseURL, &soundID)
-        //播放声音
-        AudioServicesPlaySystemSound(soundID)
-        //震动
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+         guard self.kPlay else {
+
+             return
+         }
+         // 震动
+         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+         // 声音
+         AudioServicesPlaySystemSound(1109)
     }
 }
 
