@@ -78,7 +78,7 @@ open class QRProxy: NSObject {
      - parameter sanState: scanState is int = QRState 1~4
      - parameter outPut:  result = String & QRState
         */
-    @objc public convenience init( bounds: CGRect = currentBounds,  showView:UIView = currentView, fpsNum: Int = 1, scanState:Int = 4, playSource:Bool = true, outPut:@escaping (_ kString: String, _ kState:Int)-> Void){
+    @objc public convenience init( bounds: CGRect = currentBounds,  showView:UIView = currentView, fpsNum: Int = 1, scanState:Int = 7, playSource:Bool = true, outPut:@escaping (_ kString: String, _ kState:Int)-> Void){
         self.init()
         attributeSet(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState:  QRState(rawValue: scanState) ?? .All, play: playSource)
         self.kSingleClosure = { kResult in
@@ -102,7 +102,7 @@ open class QRProxy: NSObject {
         }
         self.kPlay = play
         captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes(scanState: scanState)
-        videoPreviewLayer?.frame = showView.frame
+        videoPreviewLayer?.frame = CGRect(x: 0, y: 0, width: showView.frame.width, height: showView.frame.height)
         kShowView.layer.addSublayer(videoPreviewLayer!)
         captureSession.startRunning()
               // 这里必须使用bounds 否则定位会出错
@@ -183,7 +183,9 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
         guard kFpsNum != 1 else{
             self.feedbackGenerator()
             kSingleClosure!(QRModel.singleOutput(metadataObjects: metadataObjects))
-                captureSession.startRunning()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.startCurrentDevice()
+            }
             return
         }
         // 每隔kFpsNum帧生成一次
@@ -198,28 +200,39 @@ extension  QRProxy:AVCaptureMetadataOutputObjectsDelegate{
                 if kSingleClosure != nil {
                     kSingleClosure!(QRModel.singleOutput(metadataObjects: maxAVMetadataObject!))
                 }
-                captureSession.startRunning()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    self?.startCurrentDevice()
+                }
                 return
             }
             tagArray.removeAll()
             var btnTag = 100
             for metadataItem  in maxAVMetadataObject! {
-                let metadataObj = metadataItem as! AVMetadataMachineReadableCodeObject
-                if QRModel.supportedCodeTypes(scanState: .All).contains(metadataObj.type) {
-                    let barCodeObject = videoPreviewLayer?.transformedMetadataObject(for: metadataObj)
+                if QRModel.supportedCodeTypes(scanState: .All).contains(metadataItem.type) {
+                    let barCodeObject = videoPreviewLayer?.transformedMetadataObject(for: metadataItem)
                     let btn = UrlButton.init(frame: barCodeObject!.bounds)
                     //  y 值需加上信息栏的高度
                     //  x 值计算采集区域的大小和展示view的偏差
                     btn.frame.origin.y += (kShowView.bounds.width)/2 + QRModel.statuHeight()
                     btn.frame.origin.x += (kShowView.frame.width - kBounds.width) / 2
                     /// 因为采集到的条形码的高度都在1.3左右，所以设置条形码的高度和位置
-                    if QRModel.coderState(objType: metadataObj.type) == .Barcodes {
+                    if QRModel.coderState(objType: metadataItem.type) == .Barcodes {
                         btn.frame.size.height =  btn.frame.size.width / 3
                         btn.center.y -= btn.frame.size.height/2
                     }
                     btn.tag = btnTag
-                    btn.url = metadataObj.stringValue
-                    btn.qrState = QRModel.coderState(objType: metadataObj.type)
+                    
+                    if metadataItem is  AVMetadataMachineReadableCodeObject{
+                        let metadataObj = metadataItem as! AVMetadataMachineReadableCodeObject
+                        btn.url = metadataObj.stringValue
+                        btn.qrState = QRModel.coderState(objType: metadataObj.type)
+                    }else{
+                        if #available(iOS 13.0, *) {
+                            let metadataObj = metadataItem as! AVMetadataBodyObject
+                            btn.url = String("\(metadataObj.bodyID)")
+                            btn.qrState = QRModel.coderState(objType: metadataObj.type)
+                        }
+                    }
                     btn.addTarget(self, action: #selector(chooseButtonClick(_:)), for: .touchUpInside)
                     btn.layer.borderColor = UIColor.green.cgColor
                     btn.layer.borderWidth = 2

@@ -15,13 +15,19 @@ public enum QRState:Int {
     case Barcodes = 1
     case Codes2D = 2
     case Bodies = 3
-    case All = 4
+    case Barcodes_Codes2D = 4
+    case Barcodes_Bodies = 5
+    case Codes2D_Bodies = 6
+    case All = 7
     public init?(rawValue: Int) {
         var kState:QRState
         switch rawValue {
         case 1: kState = .Barcodes
         case 2: kState = .Codes2D
         case 3: kState = .Bodies
+        case 4: kState = .Barcodes_Codes2D
+        case 5: kState = .Barcodes_Bodies
+        case 6: kState = .Codes2D_Bodies
         default:
             kState = .All
         }
@@ -34,7 +40,7 @@ public enum QRState:Int {
 struct QRModel {
      static func isAuther() -> Bool{
         let deviceStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        guard deviceStatus == .authorized  else {
+         guard (deviceStatus == .authorized || deviceStatus == .notDetermined)  else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 DispatchQueue.main.async {
                     QRModel.currentViewController().dismiss(animated: true) {
@@ -188,6 +194,7 @@ struct QRModel {
     static func supportedCodeTypes(scanState:QRState)->[AVMetadataObject.ObjectType]{
         var res:[AVMetadataObject.ObjectType] = []
         switch scanState {
+            // Fallback on earlier versions
         case .Barcodes:
             res = supportedCodeTypesBarcodes()
         case .Codes2D:
@@ -196,13 +203,25 @@ struct QRModel {
             if #available(iOS 13.0, *) {
                 res = supportedCodeTypesCodesBodies()
             }
+        case .Barcodes_Codes2D:
+            res.append(contentsOf: supportedCodeTypesBarcodes())
+            res.append(contentsOf: supportedCodeTypesCodes2D())
+        case .Barcodes_Bodies:
+            res.append(contentsOf: supportedCodeTypesBarcodes())
+            if #available(iOS 13.0, *) {
+                res.append(contentsOf: supportedCodeTypesCodesBodies())
+            }
+        case .Codes2D_Bodies:
+            res.append(contentsOf: supportedCodeTypesCodes2D())
+            if #available(iOS 13.0, *) {
+                res.append(contentsOf: supportedCodeTypesCodesBodies())
+            }
         case .All:
             res.append(contentsOf: supportedCodeTypesBarcodes())
             res.append(contentsOf: supportedCodeTypesCodes2D())
             if #available(iOS 13.0, *) {
                 res.append(contentsOf: supportedCodeTypesCodesBodies())
             }
-                // Fallback on earlier versions
         }
         return res
     }
@@ -239,12 +258,26 @@ struct QRModel {
     
     
     static func singleOutput(metadataObjects:[AVMetadataObject]) -> (kString:String,kState: QRState){
-        let metadataObj = metadataObjects.first as! AVMetadataMachineReadableCodeObject
-//        if QRModel.supportedCodeTypes().contains(metadataObj.type) {
+        let metadataObj = metadataObjects.first
+        if #available(iOS 13.0, *) {
+            if metadataObj is AVMetadataMachineReadableCodeObject {
+                let metadataObj = metadataObjects.first as! AVMetadataMachineReadableCodeObject
+                if metadataObj.stringValue != nil {
+                    return (metadataObj.stringValue! ,QRModel.coderState(objType: metadataObj.type))
+                }
+            }else if metadataObj is AVMetadataBodyObject{
+                let metadataObj = metadataObjects.first as! AVMetadataBodyObject
+                if metadataObj.bodyID != 0 {
+                    return ( String("\(metadataObj.bodyID)"),QRModel.coderState(objType: metadataObj.type))
+                }
+            }
+        } else {
+            let metadataObj = metadataObjects.first as! AVMetadataMachineReadableCodeObject
             if metadataObj.stringValue != nil {
                 return (metadataObj.stringValue! ,QRModel.coderState(objType: metadataObj.type))
             }
-//        }
+            // Fallback on earlier versions
+        }
         return ("12345678->测试数据",.Barcodes)
     }
 }
