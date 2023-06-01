@@ -104,18 +104,21 @@ open class QRProxy: NSObject {
         captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes(scanState: scanState)
         videoPreviewLayer?.frame = CGRect(x: 0, y: 0, width: showView.frame.width, height: showView.frame.height)
         kShowView.layer.addSublayer(videoPreviewLayer!)
-        captureSession.startRunning()
-              // 这里必须使用bounds 否则定位会出错
-        let interRect = videoPreviewLayer?.metadataOutputRectConverted(fromLayerRect: bounds)
-        captureMetadataOutput.rectOfInterest = interRect!
         
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.captureSession.startRunning()
+            let interRect = self.videoPreviewLayer?.metadataOutputRectConverted(fromLayerRect: bounds)
+            self.captureMetadataOutput.rectOfInterest = interRect!
+        }
     }
     
     @objc public func stopCurrentDevice(){
         captureSession.stopRunning()
     }
     @objc public func startCurrentDevice(){
-        captureSession.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.captureSession.startRunning()
+        }
     }
     /** install flash on off*/
     @objc public func trunOffDevice(touchMode: AVCaptureDevice.TorchMode){
