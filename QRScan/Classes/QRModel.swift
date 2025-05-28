@@ -19,22 +19,29 @@ public enum QRState:Int {
     case Barcodes_Bodies = 5
     case Codes2D_Bodies = 6
     case All = 7
+    // Simplified init by removing the temporary kState variable
     public init?(rawValue: Int) {
-        var kState:QRState
         switch rawValue {
-        case 1: kState = .Barcodes
-        case 2: kState = .Codes2D
-        case 3: kState = .Bodies
-        case 4: kState = .Barcodes_Codes2D
-        case 5: kState = .Barcodes_Bodies
-        case 6: kState = .Codes2D_Bodies
-        default:
-            kState = .All
+        case 1: self = .Barcodes
+        case 2: self = .Codes2D
+        case 3: self = .Bodies
+        case 4: self = .Barcodes_Codes2D
+        case 5: self = .Barcodes_Bodies
+        case 6: self = .Codes2D_Bodies
+        default: self = .All
         }
-        self = kState
     }
 }
 
+// Struct to hold localized strings or constants for UI elements
+private enum UILabels {
+    static let errorTitle = "Error"
+    static let doneButton = "Done"
+    static let cancelButton = "cancel"
+    static let noCameraPermissionMessage = "No camera permission was granted"
+    static let failedToGetCameraMessage = "Failed to get the camera device"
+    static let defaultScanErrorMessage = "Unable to parse QR code or barcode."
+}
 
 
 struct QRModel {
@@ -43,16 +50,31 @@ struct QRModel {
          guard (deviceStatus == .authorized || deviceStatus == .notDetermined)  else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 DispatchQueue.main.async {
-                    QRModel.currentViewController().dismiss(animated: true) {
-                        let alertView = UIAlertController.init(title: "Error", message: "No camera permission was granted", preferredStyle: .alert)
-                        let doneAction = UIAlertAction.init(title: "Done", style: .default) { _ in
-                            let url:URL = URL(string:UIApplication.openSettingsURLString)!
-                            UIApplication.shared.open(url)
+                    // Safely unwrap currentViewController
+                    guard let currentVC = QRModel.currentViewController() else {
+                        // Log error or handle missing view controller
+                        print("\(UILabels.errorTitle): Could not get current view controller in isAuther.")
+                        return
+                    }
+                    currentVC.dismiss(animated: true) {
+                        let alertView = UIAlertController.init(title: UILabels.errorTitle, message: UILabels.noCameraPermissionMessage, preferredStyle: .alert)
+                        let doneAction = UIAlertAction.init(title: UILabels.doneButton, style: .default) { _ in
+                            // Safely unwrap URL for settings
+                            guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+                                print("\(UILabels.errorTitle): Invalid settings URL string.")
+                                return
+                            }
+                            UIApplication.shared.open(settingsUrl)
                         }
-                        let cancelAction = UIAlertAction.init(title: "cancel", style: .cancel)
+                        let cancelAction = UIAlertAction.init(title: UILabels.cancelButton, style: .cancel)
                         alertView.addAction(doneAction)
                         alertView.addAction(cancelAction)
-                        QRModel.currentViewController().present(alertView, animated: true)
+                        // Safely unwrap currentViewController again for presenting the alert
+                        guard let vcForAlert = QRModel.currentViewController() else {
+                             print("\(UILabels.errorTitle): Could not get current view controller to present alert in isAuther.")
+                            return
+                        }
+                        vcForAlert.present(alertView, animated: true)
                     }
                 }
             }
@@ -61,68 +83,126 @@ struct QRModel {
         return true
     }
     static func showError(){
-        QRModel.currentViewController().dismiss(animated: true) {
-            let alertView = UIAlertController.init(title: "Error", message: "Failed to get the camera device", preferredStyle: .alert)
-            let doneAction = UIAlertAction.init(title: "Done", style: .default) { _ in
-                QRModel.currentViewController().dismiss(animated: true)
+        // Safely unwrap currentViewController
+        guard let currentVC = QRModel.currentViewController() else {
+            // Log error or handle missing view controller
+            print("\(UILabels.errorTitle): Could not get current view controller in showError.")
+            return
+        }
+        currentVC.dismiss(animated: true) {
+            let alertView = UIAlertController.init(title: UILabels.errorTitle, message: UILabels.failedToGetCameraMessage, preferredStyle: .alert)
+            let doneAction = UIAlertAction.init(title: UILabels.doneButton, style: .default) { _ in
+                // Safely unwrap currentViewController again for dismissing
+                 guard let vcToDismiss = QRModel.currentViewController() else {
+                    print("\(UILabels.errorTitle): Could not get current view controller to dismiss alert in showError.")
+                    return
+                }
+                vcToDismiss.dismiss(animated: true)
             }
             alertView.addAction(doneAction)
-            QRModel.currentViewController().present(alertView, animated: true)
+            // Safely unwrap currentViewController again for presenting the alert
+            guard let vcForAlert = QRModel.currentViewController() else {
+                 print("\(UILabels.errorTitle): Could not get current view controller to present alert in showError.")
+                return
+            }
+            vcForAlert.present(alertView, animated: true)
         }
     }
     static func statuHeight() -> CGFloat {
         if #available(iOS 13.0, *) {
             let set = UIApplication.shared.connectedScenes
-            let windowScene = set.first as! UIWindowScene
+            // Safely unwrap the first window scene
+            guard let windowScene = set.first as? UIWindowScene else {
+                // Provide a fallback height or handle the error appropriately
+                return 68.0 // Default or fallback height
+            }
             return windowScene.statusBarManager?.statusBarFrame.size.height ?? 68.0
         } else {
             return UIApplication.shared.statusBarFrame.size.height;
         }
     }
-    static func currentViewController() -> UIViewController  {
-        func current(base: UIViewController) -> UIViewController? {
-            if let nav = base as? UINavigationController {
-                return current(base: nav.visibleViewController!)
+    // Updated to return UIViewController? to reflect that a view controller might not always be found.
+    // Refactored for clarity using a switch statement for base view controller types.
+    static func currentViewController() -> UIViewController?  {
+        // Helper recursive function to find the top-most view controller.
+        func findTopViewController(base: UIViewController?) -> UIViewController? {
+            guard let controller = base else { return nil }
+
+            // Switch on the type of the base controller to navigate the hierarchy.
+            switch controller {
+            case let navCtl as UINavigationController:
+                // If it's a navigation controller, recurse on its visible view controller.
+                return findTopViewController(base: navCtl.visibleViewController)
+            case let tabCtl as UITabBarController:
+                // If it's a tab bar controller, recurse on its selected view controller.
+                // Ensure selectedViewController is not nil before recursing.
+                return findTopViewController(base: tabCtl.selectedViewController)
+            case let splitCtl as UISplitViewController:
+                 // For UISplitViewController, prefer the last view controller in the `viewControllers` array
+                 // as it's often the most relevant content view.
+                 // Fallback to presentingViewController if that's more appropriate in some contexts,
+                 // but `viewControllers.last` is generally more robust for typical split view setups.
+                 // Note: `presentingViewController` for a root split view controller is often nil.
+                return findTopViewController(base: splitCtl.viewControllers.last)
+            default:
+                // If the controller has a presented view controller, recurse on that.
+                if let presented = controller.presentedViewController {
+                    return findTopViewController(base: presented)
+                }
+                // Otherwise, this is the top-most controller we can find.
+                return controller
             }
-            if let tab = base as? UITabBarController {
-                return current(base: tab.selectedViewController!)
-            }
-            if let presented = base.presentedViewController {
-                return current(base: presented)
-            }
-            if let split = base as? UISplitViewController{
-                return current(base: split.presentingViewController!)
-            }
-            return base
         }
-        return current(base: (currentWindow()?.rootViewController)!)!
+
+        // Start the search from the root view controller of the current key window.
+        guard let rootVC = currentWindow()?.rootViewController else {
+            print("\(UILabels.errorTitle): Root view controller not found in currentWindow.")
+            return nil
+        }
+        return findTopViewController(base: rootVC)
     }
-    static  func currentWindow() -> UIWindow? {
-        if #available(iOS 14.0, *) {
-            if let window = UIApplication.shared.connectedScenes
-                .map({$0 as? UIWindowScene})
-                .compactMap({$0})
-                .first?.windows.first {return window}
-            else if let window =  UIApplication.shared.delegate?
-                .window {return window}
-            else{ return nil }
+
+    // Refactored to use modern APIs for window retrieval where possible and clarify logic.
+    static func currentWindow() -> UIWindow? {
+        var currentWindow: UIWindow?
+
+        if #available(iOS 15.0, *) {
+            // For iOS 15 and later, directly access the keyWindow of the first active UIWindowScene.
+            currentWindow = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive })
+                .flatMap({ $0 as? UIWindowScene })?
+                .keyWindow
         } else if #available(iOS 13.0, *) {
-            if let window = UIApplication.shared.connectedScenes
-                .filter({$0.activationState == .foregroundActive})
-                .map({$0 as? UIWindowScene})
-                .compactMap({$0})
-                .first?.windows.filter({$0.isKeyWindow})
-                .first{ return window}
-            else if let window =  UIApplication.shared.delegate?
-                .window { return window}
-            else{ return nil }
-        }else{
-            if let window = UIApplication.shared.delegate?
-                .window {return window}
-            else{return nil
-                
-            }
+            // For iOS 13 and 14, find the first active UIWindowScene and then its first key window.
+            currentWindow = UIApplication.shared.connectedScenes
+                .filter { $0.activationState == .foregroundActive }
+                .compactMap { $0 as? UIWindowScene }
+                .first?
+                .windows
+                .first(where: \.isKeyWindow)
         }
+
+        // Fallback for older iOS versions (before 13) or if the above methods fail.
+        // UIApplication.shared.windows.first(where: \.isKeyWindow) can also be used for iOS < 13 if scene delegate is not used.
+        if currentWindow == nil {
+             if #available(iOS 13.0, *) {
+                 // This is a broader fallback for iOS 13+ if the specific key window isn't found via active scene.
+                 currentWindow = UIApplication.shared.windows.first(where: \.isKeyWindow)
+             } else {
+                 // Legacy way for iOS < 13.
+                 currentWindow = UIApplication.shared.keyWindow
+             }
+        }
+      
+        // Final fallback to the delegate's window if still no window is found.
+        if currentWindow == nil {
+            currentWindow = UIApplication.shared.delegate?.window ?? nil
+        }
+        
+        if currentWindow == nil {
+             print("Warning: Could not find current window.")
+        }
+        return currentWindow
     }
     
     static func deviceOrientation(connection:AVCaptureConnection) -> UIDeviceOrientation{
@@ -141,8 +221,7 @@ struct QRModel {
     private static func supportedCodeTypesCodesBodies() -> [AVMetadataObject.ObjectType]{[
         /** 人脸识别？*/
         .humanBody,
-        .dogBody,
-        .dogBody
+        .dogBody // Removed duplicate .dogBody
     ]}
     private static func supportedCodeTypesCodes2D()->[AVMetadataObject.ObjectType]{
         /** 二维码 */
@@ -257,28 +336,41 @@ struct QRModel {
 
     
     
-    static func singleOutput(metadataObjects:[AVMetadataObject]) -> (kString:String,kState: QRState){
-        let metadataObj = metadataObjects.first
+    // Updated to handle potential nil values and removed test data string
+    static func singleOutput(metadataObjects:[AVMetadataObject]) -> (kString:String,kState: QRState)? {
+        guard let metadataObj = metadataObjects.first else {
+            // No metadata objects found
+            return nil
+        }
+
         if #available(iOS 13.0, *) {
-            if metadataObj is AVMetadataMachineReadableCodeObject {
-                let metadataObj = metadataObjects.first as! AVMetadataMachineReadableCodeObject
-                if metadataObj.stringValue != nil {
-                    return (metadataObj.stringValue! ,QRModel.coderState(objType: metadataObj.type))
+            if let machineReadableCode = metadataObj as? AVMetadataMachineReadableCodeObject {
+                // Safely unwrap stringValue
+                if let stringValue = machineReadableCode.stringValue {
+                    return (stringValue, QRModel.coderState(objType: machineReadableCode.type))
                 }
-            }else if metadataObj is AVMetadataBodyObject{
-                let metadataObj = metadataObjects.first as! AVMetadataBodyObject
-                if metadataObj.bodyID != 0 {
-                    return ( String("\(metadataObj.bodyID)"),QRModel.coderState(objType: metadataObj.type))
+            } else if let bodyObject = metadataObj as? AVMetadataBodyObject {
+                // bodyID is an Int, convert to String. Check if bodyID is meaningful (e.g., not 0 or -1 if those are invalid)
+                // Assuming any non-zero bodyID is valid.
+                if bodyObject.bodyID != 0 { // Or some other check for a valid ID if needed
+                    return (String(bodyObject.bodyID), QRModel.coderState(objType: bodyObject.type))
                 }
             }
         } else {
-            let metadataObj = metadataObjects.first as! AVMetadataMachineReadableCodeObject
-            if metadataObj.stringValue != nil {
-                return (metadataObj.stringValue! ,QRModel.coderState(objType: metadataObj.type))
+            // Fallback for older iOS versions (before iOS 13.0)
+            // AVMetadataBodyObject is not available, so we only check for AVMetadataMachineReadableCodeObject
+            if let machineReadableCode = metadataObj as? AVMetadataMachineReadableCodeObject {
+                // Safely unwrap stringValue
+                if let stringValue = machineReadableCode.stringValue {
+                    return (stringValue, QRModel.coderState(objType: machineReadableCode.type))
+                }
             }
-            // Fallback on earlier versions
         }
-        return ("12345678->测试数据",.Barcodes)
+        // If no valid data could be extracted, return nil
+        // Replaced "12345678->测试数据" with a nil return to indicate failure.
+        // The caller should handle this nil case.
+        // Alternatively, could return (UILabels.defaultScanErrorMessage, .Barcodes) or similar if a non-optional return is strictly required upstream.
+        return nil
     }
 }
 
