@@ -10,7 +10,7 @@ import AVFoundation
 import UIKit
 
 // Define constants used within the class
-private enum QRProxyConstants {
+enum QRProxyConstants {
     static let defaultFpsNum = 1
     static let maxFpsNum = 60
     static let soundIDBeep: SystemSoundID = 1109 // Standard beep sound
@@ -75,7 +75,7 @@ open class QRProxy: NSObject {
      - parameter outPut:  result tuple with String & QRState
      */
     // Updated default values for bounds and showView to handle optionals
-    public convenience init(bounds: CGRect? = Self.currentBounds, showView:UIView? = Self.currentView ,fpsNum: Int = QRProxyConstants.defaultFpsNum , sanState:QRState = .All, playSource:Bool = true, outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
+    public convenience init(bounds: CGRect? = QRProxy.currentBounds, showView:UIView? = QRProxy.currentView ,fpsNum: Int = 1 , sanState:QRState = .All, playSource:Bool = true, outPut:@escaping ((kString:String,kState:QRState)?) -> Void) {
         self.init()
         // Ensure bounds and showView are not nil before proceeding
         guard let validBounds = bounds, let validShowView = showView else {
@@ -119,9 +119,10 @@ open class QRProxy: NSObject {
      - parameter sanState: scanState is int = QRState 1~4
      - parameter outPut:  result = String & QRState
         */
-    @objc public convenience init( bounds: CGRect? = Self.currentBounds,  showView:UIView? = Self.currentView, fpsNum: Int = QRProxyConstants.defaultFpsNum, scanState:Int = QRState.All.rawValue, playSource:Bool = true, outPut:@escaping (_ kString: String, _ kState:Int)-> Void){
+    @objc public convenience init( bounds: CGRect = CGRect(x: 0, y: 0, width: 0, height: 0),  showView:UIView? = QRProxy.currentView, fpsNum: Int = 1, scanState:Int = 7, playSource:Bool = true, outPut:@escaping (_ kString: String, _ kState:Int)-> Void){
         self.init()
-        guard let validBounds = bounds, let validShowView = showView else {
+        let validBounds = bounds
+        guard let validShowView = showView else {
             print("Error: Bounds or ShowView is nil during QRProxy OC initialization.")
             return
         }
