@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        kQR?.trunOffDevice(touchMode: .on)
+        kQR?.toggleTorch(mode: .on)
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

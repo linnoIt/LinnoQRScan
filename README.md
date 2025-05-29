@@ -16,6 +16,7 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 2.support quickly build
 3.scan success -> "di" 
 4.update -[AVCaptureSession startRunning] should be called from background thread. Calling it on the main thread can lead to UI unresponsiveness question
+5.Manually adjust the focal length
 
 ## Installation
 
