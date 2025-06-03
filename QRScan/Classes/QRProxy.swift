@@ -29,7 +29,8 @@ open class QRProxy: NSObject {
     
     private var currentZoomFactor: CGFloat = 1.0
     
-
+    private var pause: Bool = false
+    
     public static var currentView: UIView { QRModel.currentViewController()?.view ?? UIView()}
     public static var currentBounds: CGRect { currentView.bounds }
 
@@ -153,6 +154,10 @@ extension QRProxy {
         guard captureSession.isRunning else { return }
         captureSession.stopRunning()
     }
+    
+    @objc public func pause(_ value: Bool) {
+        pause = value
+    }
 
     @objc public func setZoom(factor: CGFloat) {
         guard let device = self.device else { return }
@@ -189,9 +194,23 @@ extension QRProxy {
 }
 
 extension QRProxy: AVCaptureMetadataOutputObjectsDelegate {
+    
+    /// 暂停并在 0.5 秒后恢复渲染
+    private func pausePreviewForHalfSecond(isEnabled: Bool) {
+        guard let connection = videoPreviewLayer?.connection else { return }
+        connection.isEnabled = isEnabled  // 暂停渲染
+    }
+    
+    private func previewConnection() -> Bool {
+        guard let connection = videoPreviewLayer?.connection else { return false }
+        return connection.isEnabled
+    }
+    
     public func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         guard !metadataObjects.isEmpty else { return }
-        captureSession.stopRunning()
+        guard pause == false else { return }
+        guard previewConnection() else { return }
+        pausePreviewForHalfSecond(isEnabled: false)
 
         if fpsNum == 1 {
             processScan(metadataObjects)
@@ -208,7 +227,8 @@ extension QRProxy: AVCaptureMetadataOutputObjectsDelegate {
     private func processScan(_ objects: [AVMetadataObject]) {
         feedback()
         outputHandler(QRModel.singleOutput(from: objects))
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.start() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.pausePreviewForHalfSecond(isEnabled: true)
+        }
     }
 
     private func displayResults(_ objects: [AVMetadataObject]) {
@@ -255,7 +275,7 @@ extension QRProxy: AVCaptureMetadataOutputObjectsDelegate {
         tagArray.forEach { showView?.viewWithTag($0)?.removeFromSuperview() }
         tagArray.removeAll()
         frameBuffer.removeAll()
-        start()
+        pausePreviewForHalfSecond(isEnabled: true)
         if let url = sender.url, let state = sender.qrState {
             outputHandler((url, state))
         }

@@ -22,6 +22,8 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 5.Manually adjust the focal length
 
+6.add pause to scan
+
 ## Installation
 
 QRScan is available through [CocoaPods](https://cocoapods.org). To install
