@@ -88,9 +88,33 @@ open class QRProxy: NSObject {
             }
         }
     }
-
+    
+    private func systemAllDevice() -> AVCaptureDevice? {
+        var captureDevice: AVCaptureDevice?
+        /// 获取超广角、长焦、普通相机的结合体
+        if #available(iOS 13.0, *) {
+            captureDevice = AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInTripleCamera], mediaType: .video, position: .back).devices.first
+            if captureDevice == nil {
+                /// 获取超广角和普通相机的结合体
+                captureDevice =  AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualWideCamera], mediaType: .video, position: .back).devices.first
+                if captureDevice == nil {
+                    /// 获取普通相机
+                    captureDevice = AVCaptureDevice.default(for: .video)
+                }
+            }
+            
+        } else {
+           captureDevice =  AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualCamera], mediaType: .video, position: .back).devices.first
+            if captureDevice == nil {
+                captureDevice = AVCaptureDevice.default(for: .video)
+            }
+            // Fallback on earlier versions
+        }
+        return captureDevice
+    }
+    
     private func setupCamera() {
-        guard let captureDevice = AVCaptureDevice.default(for: .video) else {
+        guard let captureDevice = systemAllDevice() else {
             QRModel.showError()
             return
         }
@@ -121,12 +145,12 @@ open class QRProxy: NSObject {
 extension QRProxy {
     
     @objc public func start() {
-        guard captureSession.isRunning else { return }
+        guard !captureSession.isRunning else { return }
         DispatchQueue.global(qos: .userInitiated).async { self.captureSession.startRunning() }
     }
 
     @objc public func stop() {
-        guard !captureSession.isRunning else { return }
+        guard captureSession.isRunning else { return }
         captureSession.stopRunning()
     }
 
