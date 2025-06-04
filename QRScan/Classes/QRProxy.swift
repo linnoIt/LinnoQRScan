@@ -36,6 +36,7 @@ open class QRProxy: NSObject {
 
     public convenience init(
         bounds: CGRect = QRProxy.currentBounds,
+        scanFrame: CGRect? = nil,
         showView: UIView = QRProxy.currentView,
         fpsNum: Int = 1,
         scanState: QRState = .All,
@@ -43,7 +44,7 @@ open class QRProxy: NSObject {
         outPut: @escaping ((kString: String, kState: QRState)) -> Void
     ) {
         self.init()
-        self.configure(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState: scanState, playFeedback: playSource)
+        self.configure(bounds: bounds, scanFrame: scanFrame, showView: showView, fpsNum: fpsNum, scanState: scanState, playFeedback: playSource)
         self.outputHandler = outPut
     }
 
@@ -56,22 +57,24 @@ open class QRProxy: NSObject {
     @objc public convenience init(
         bounds: CGRect = QRProxy.currentBounds,
         showView: UIView = QRProxy.currentView,
+        scanFrame: CGRect = .zero,
         fpsNum: Int = 1,
         scanState: Int = QRState.All.rawValue,
         playSource: Bool = true,
         outPut: @escaping (_ kString: String, _ kState: Int) -> Void
     ) {
         self.init()
-        self.configure(bounds: bounds, showView: showView, fpsNum: fpsNum, scanState: QRState(rawValue: scanState) ?? .All, playFeedback: playSource)
+        var kScanFrame: CGRect? = scanFrame == .zero ? nil : scanFrame
+        self.configure(bounds: bounds, scanFrame: kScanFrame, showView: showView, fpsNum: fpsNum, scanState: QRState(rawValue: scanState) ?? .All, playFeedback: playSource)
         self.outputHandler = { result in outPut(result.kString, result.kState.rawValue) }
     }
 
     private override init() { super.init() }
 
-    private func configure(bounds: CGRect, showView: UIView, fpsNum: Int, scanState: QRState, playFeedback: Bool) {
+    private func configure(bounds: CGRect, scanFrame: CGRect? = nil , showView: UIView, fpsNum: Int, scanState: QRState, playFeedback: Bool) {
         guard QRModel.isAuther() else { return }
-
-        self.bounds = bounds
+        
+        self.bounds = scanFrame ?? bounds
         self.showView = showView
         self.fpsNum = max(1, min(fpsNum, 60))
         self.scanState = scanState
@@ -84,7 +87,7 @@ open class QRProxy: NSObject {
 
         DispatchQueue.global(qos: .userInitiated).async {
             self.captureSession.startRunning()
-            if let interRect = self.videoPreviewLayer?.metadataOutputRectConverted(fromLayerRect: bounds) {
+            if let interRect = self.videoPreviewLayer?.metadataOutputRectConverted(fromLayerRect: scanFrame ?? bounds) {
                 self.captureMetadataOutput.rectOfInterest = interRect
             }
         }

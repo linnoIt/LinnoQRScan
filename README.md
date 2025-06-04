@@ -24,6 +24,8 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 6.add pause to scan
 
+7.support set bounds && scan frame
+
 ## Installation
 
 QRScan is available through [CocoaPods](https://cocoapods.org). To install
