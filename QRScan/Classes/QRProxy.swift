@@ -79,7 +79,7 @@ open class QRProxy: NSObject {
 
         setupCamera()
 
-        videoPreviewLayer?.frame = CGRect(origin: .zero, size: bounds.size)
+        videoPreviewLayer?.frame = bounds
         if let preview = videoPreviewLayer { showView.layer.addSublayer(preview) }
 
         DispatchQueue.global(qos: .userInitiated).async {
