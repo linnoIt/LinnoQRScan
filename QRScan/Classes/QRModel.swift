@@ -136,24 +136,24 @@ struct QRModel {
         }
     }
 
-    static func supportedCodeTypes(for state: QRState) -> [AVMetadataObject.ObjectType] {
+    static func supportedCodeTypes(for state: QRState, optional: [AVMetadataObject.ObjectType]? = nil) -> [AVMetadataObject.ObjectType] {
         var result: [AVMetadataObject.ObjectType] = []
         switch state {
-        case .Barcodes: result += supportedCodeTypesBarcodes()
-        case .Codes2D: result += supportedCodeTypes2D()
+        case .Barcodes: result += optional ?? supportedCodeTypesBarcodes()
+        case .Codes2D: result += optional ?? supportedCodeTypes2D()
         case .Bodies:
-            if #available(iOS 13.0, *) { result += supportedCodeTypesBodies() }
+            if #available(iOS 13.0, *) { result += optional ?? supportedCodeTypesBodies() }
         case .Barcodes_Codes2D:
-            result += supportedCodeTypesBarcodes() + supportedCodeTypes2D()
+            result += optional ?? supportedCodeTypesBarcodes() + supportedCodeTypes2D()
         case .Barcodes_Bodies:
-            result += supportedCodeTypesBarcodes()
-            if #available(iOS 13.0, *) { result += supportedCodeTypesBodies() }
+            result += optional ?? supportedCodeTypesBarcodes()
+            if #available(iOS 13.0, *) { result += optional ?? supportedCodeTypesBodies() }
         case .Codes2D_Bodies:
             result += supportedCodeTypes2D()
-            if #available(iOS 13.0, *) { result += supportedCodeTypesBodies() }
+            if #available(iOS 13.0, *) { result += optional ?? supportedCodeTypesBodies() }
         case .All:
-            result += supportedCodeTypesBarcodes() + supportedCodeTypes2D()
-            if #available(iOS 13.0, *) { result += supportedCodeTypesBodies() }
+            result += optional ?? supportedCodeTypesBarcodes() + supportedCodeTypes2D()
+            if #available(iOS 13.0, *) { result += optional ?? supportedCodeTypesBodies() }
         }
         return result
     }

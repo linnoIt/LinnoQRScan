@@ -41,16 +41,17 @@ open class QRProxy: NSObject {
         fpsNum: Int = 1,
         scanState: QRState = .All,
         playSource: Bool = true,
+        supportCodeTypes: [AVMetadataObject.ObjectType]? = nil,
         outPut: @escaping ((kString: String, kState: QRState)) -> Void
     ) {
         self.init()
-        self.configure(bounds: bounds, scanFrame: scanFrame, showView: showView, fpsNum: fpsNum, scanState: scanState, playFeedback: playSource)
+        self.configure(bounds: bounds, scanFrame: scanFrame, showView: showView, fpsNum: fpsNum, scanState: scanState, playFeedback: playSource, supportCodeTypes: supportCodeTypes)
         self.outputHandler = outPut
     }
 
     @objc public convenience init(outPut: @escaping (_ kString: String, _ kState: Int) -> Void) {
         self.init()
-        self.configure(bounds: Self.currentBounds, showView: Self.currentView, fpsNum: 1, scanState: .All, playFeedback: true)
+        self.configure(bounds: Self.currentBounds, showView: Self.currentView, fpsNum: 1, scanState: .All, playFeedback: true, supportCodeTypes: nil)
         self.outputHandler = { result in outPut(result.kString, result.kState.rawValue) }
     }
 
@@ -61,17 +62,18 @@ open class QRProxy: NSObject {
         fpsNum: Int = 1,
         scanState: Int = QRState.All.rawValue,
         playSource: Bool = true,
+        supportCodeTypes: [AVMetadataObject.ObjectType]? = nil,
         outPut: @escaping (_ kString: String, _ kState: Int) -> Void
     ) {
         self.init()
         let kScanFrame: CGRect? = scanFrame == .zero ? nil : scanFrame
-        self.configure(bounds: bounds, scanFrame: kScanFrame, showView: showView, fpsNum: fpsNum, scanState: QRState(rawValue: scanState) ?? .All, playFeedback: playSource)
+        self.configure(bounds: bounds, scanFrame: kScanFrame, showView: showView, fpsNum: fpsNum, scanState: QRState(rawValue: scanState) ?? .All, playFeedback: playSource, supportCodeTypes: supportCodeTypes)
         self.outputHandler = { result in outPut(result.kString, result.kState.rawValue) }
     }
 
     private override init() { super.init() }
 
-    private func configure(bounds: CGRect, scanFrame: CGRect? = nil , showView: UIView, fpsNum: Int, scanState: QRState, playFeedback: Bool) {
+    private func configure(bounds: CGRect, scanFrame: CGRect? = nil , showView: UIView, fpsNum: Int, scanState: QRState, playFeedback: Bool, supportCodeTypes: [AVMetadataObject.ObjectType]?) {
         guard QRModel.isAuther() else { return }
         
         self.bounds = scanFrame ?? bounds
@@ -80,7 +82,7 @@ open class QRProxy: NSObject {
         self.scanState = scanState
         self.shouldPlayFeedback = playFeedback
 
-        setupCamera()
+        setupCamera(supportCodeTypes: supportCodeTypes)
 
         videoPreviewLayer?.frame = bounds
         if let preview = videoPreviewLayer { showView.layer.addSublayer(preview) }
@@ -109,7 +111,7 @@ open class QRProxy: NSObject {
             /// 获取超广角相机
             captureDevice = AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInUltraWideCamera], mediaType: .video, position: .back).devices.first
             if captureDevice == nil {
-                /// 获取长焦相机
+                /// 获取普通相机
                 captureDevice = AVCaptureDevice.default(for: .video)
             }
             
@@ -120,7 +122,7 @@ open class QRProxy: NSObject {
         return captureDevice
     }
     
-    private func setupCamera() {
+    private func setupCamera(supportCodeTypes: [AVMetadataObject.ObjectType]?) {
         guard let captureDevice = systemAllDevice() else {
             QRModel.showError()
             return
@@ -128,14 +130,19 @@ open class QRProxy: NSObject {
         do {
             device = captureDevice
             try captureDevice.lockForConfiguration()
-            captureDevice.focusMode = .continuousAutoFocus
+            if captureDevice.isFocusModeSupported(.continuousAutoFocus) {
+                captureDevice.focusMode = .continuousAutoFocus
+            }
+            if captureDevice.isExposureModeSupported(.continuousAutoExposure) {
+                captureDevice.exposureMode = .continuousAutoExposure
+            }
             captureDevice.unlockForConfiguration()
 
             let input = try AVCaptureDeviceInput(device: captureDevice)
             captureSession.addInput(input)
             captureSession.addOutput(captureMetadataOutput)
             captureMetadataOutput.setMetadataObjectsDelegate(self, queue: .main)
-            captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes(for: scanState)
+            captureMetadataOutput.metadataObjectTypes = QRModel.supportedCodeTypes(for: scanState, optional: supportCodeTypes)
 
             let preview = AVCaptureVideoPreviewLayer(session: captureSession)
             preview.videoGravity = .resizeAspectFill
