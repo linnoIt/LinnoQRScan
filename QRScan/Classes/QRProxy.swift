@@ -64,7 +64,7 @@ open class QRProxy: NSObject {
         outPut: @escaping (_ kString: String, _ kState: Int) -> Void
     ) {
         self.init()
-        var kScanFrame: CGRect? = scanFrame == .zero ? nil : scanFrame
+        let kScanFrame: CGRect? = scanFrame == .zero ? nil : scanFrame
         self.configure(bounds: bounds, scanFrame: kScanFrame, showView: showView, fpsNum: fpsNum, scanState: QRState(rawValue: scanState) ?? .All, playFeedback: playSource)
         self.outputHandler = { result in outPut(result.kString, result.kState.rawValue) }
     }
@@ -93,25 +93,28 @@ open class QRProxy: NSObject {
         }
     }
     
+//        .builtInWideAngleCamera
+//        内置广角相机（iPhone/iPad 前后置默认摄像头）
+//        .builtInTelephotoCamera
+//        内置长焦相机（部分支持多摄的 iPhone）
+//        .builtInUltraWideCamera
+//        内置超广角相机（iPhone 11 及更新机型）
+
+    
     private func systemAllDevice() -> AVCaptureDevice? {
         var captureDevice: AVCaptureDevice?
         /// 获取超广角、长焦、普通相机的结合体
+        /// 不能获取所有的相机，会导致手机持续扫码的时候，发热严重
         if #available(iOS 13.0, *) {
-            captureDevice = AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInTripleCamera], mediaType: .video, position: .back).devices.first
+            /// 获取超广角相机
+            captureDevice = AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInUltraWideCamera], mediaType: .video, position: .back).devices.first
             if captureDevice == nil {
-                /// 获取超广角和普通相机的结合体
-                captureDevice =  AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualWideCamera], mediaType: .video, position: .back).devices.first
-                if captureDevice == nil {
-                    /// 获取普通相机
-                    captureDevice = AVCaptureDevice.default(for: .video)
-                }
+                /// 获取长焦相机
+                captureDevice = AVCaptureDevice.default(for: .video)
             }
             
         } else {
-           captureDevice =  AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualCamera], mediaType: .video, position: .back).devices.first
-            if captureDevice == nil {
-                captureDevice = AVCaptureDevice.default(for: .video)
-            }
+            captureDevice = AVCaptureDevice.default(for: .video)
             // Fallback on earlier versions
         }
         return captureDevice
@@ -144,6 +147,8 @@ open class QRProxy: NSObject {
     }
 
     deinit { print("QRProxy -> deinit") }
+    
+    var isIdentification : Bool = true
 }
 
 extension QRProxy {
@@ -193,20 +198,17 @@ extension QRProxy {
     @objc public func isTorchOn() -> Bool {
         device?.isTorchActive ?? false
     }
-    
 }
 
 extension QRProxy: AVCaptureMetadataOutputObjectsDelegate {
     
-    /// 暂停并在 0.5 秒后恢复渲染
+    /// 暂停识别
     private func pausePreviewForHalfSecond(isEnabled: Bool) {
-        guard let connection = videoPreviewLayer?.connection else { return }
-        connection.isEnabled = isEnabled  // 暂停渲染
+        isIdentification = isEnabled
     }
     
     private func previewConnection() -> Bool {
-        guard let connection = videoPreviewLayer?.connection else { return false }
-        return connection.isEnabled
+        isIdentification
     }
     
     public func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
