@@ -31,9 +31,21 @@ open class QRProxy: NSObject {
     
     private var pause: Bool = false
     
+    private var turnWideAngle: Bool = false
+    
     public static var currentView: UIView { QRModel.currentViewController()?.view ?? UIView()}
     public static var currentBounds: CGRect { currentView.bounds }
 
+    /// - Parameters:
+    ///   - bounds: 看到的bounds
+    ///   - scanFrame: 扫描区域的frame
+    ///   - showView: 需要添加layer的view
+    ///   - fpsNum: 识别
+    ///   - scanState: 扫描类型
+    ///   - playSource: 播放识别声音
+    ///   - supportCodeTypes: 支持的code类型
+    ///   - turnWideAngle: 是否开启广角
+    ///   - outPut: 返回的闭包
     public convenience init(
         bounds: CGRect = QRProxy.currentBounds,
         scanFrame: CGRect? = nil,
@@ -42,16 +54,17 @@ open class QRProxy: NSObject {
         scanState: QRState = .All,
         playSource: Bool = true,
         supportCodeTypes: [AVMetadataObject.ObjectType]? = nil,
+        turnWideAngle: Bool = false,
         outPut: @escaping ((kString: String, kState: QRState)) -> Void
     ) {
         self.init()
-        self.configure(bounds: bounds, scanFrame: scanFrame, showView: showView, fpsNum: fpsNum, scanState: scanState, playFeedback: playSource, supportCodeTypes: supportCodeTypes)
+        self.configure(bounds: bounds, scanFrame: scanFrame, showView: showView, fpsNum: fpsNum, scanState: scanState, playFeedback: playSource, supportCodeTypes: supportCodeTypes, turnWideAngle: turnWideAngle)
         self.outputHandler = outPut
     }
 
     @objc public convenience init(outPut: @escaping (_ kString: String, _ kState: Int) -> Void) {
         self.init()
-        self.configure(bounds: Self.currentBounds, showView: Self.currentView, fpsNum: 1, scanState: .All, playFeedback: true, supportCodeTypes: nil)
+        self.configure(bounds: Self.currentBounds, showView: Self.currentView, fpsNum: 1, scanState: .All, playFeedback: true, supportCodeTypes: nil, turnWideAngle: false)
         self.outputHandler = { result in outPut(result.kString, result.kState.rawValue) }
     }
 
@@ -63,17 +76,18 @@ open class QRProxy: NSObject {
         scanState: Int = QRState.All.rawValue,
         playSource: Bool = true,
         supportCodeTypes: [AVMetadataObject.ObjectType]? = nil,
+        turnWideAngle: Bool = false,
         outPut: @escaping (_ kString: String, _ kState: Int) -> Void
     ) {
         self.init()
         let kScanFrame: CGRect? = scanFrame == .zero ? nil : scanFrame
-        self.configure(bounds: bounds, scanFrame: kScanFrame, showView: showView, fpsNum: fpsNum, scanState: QRState(rawValue: scanState) ?? .All, playFeedback: playSource, supportCodeTypes: supportCodeTypes)
+        self.configure(bounds: bounds, scanFrame: kScanFrame, showView: showView, fpsNum: fpsNum, scanState: QRState(rawValue: scanState) ?? .All, playFeedback: playSource, supportCodeTypes: supportCodeTypes, turnWideAngle: turnWideAngle)
         self.outputHandler = { result in outPut(result.kString, result.kState.rawValue) }
     }
 
     private override init() { super.init() }
 
-    private func configure(bounds: CGRect, scanFrame: CGRect? = nil , showView: UIView, fpsNum: Int, scanState: QRState, playFeedback: Bool, supportCodeTypes: [AVMetadataObject.ObjectType]?) {
+    private func configure(bounds: CGRect, scanFrame: CGRect? = nil , showView: UIView, fpsNum: Int, scanState: QRState, playFeedback: Bool, supportCodeTypes: [AVMetadataObject.ObjectType]?, turnWideAngle: Bool) {
         guard QRModel.isAuther() else { return }
         
         self.bounds = scanFrame ?? bounds
@@ -81,6 +95,7 @@ open class QRProxy: NSObject {
         self.fpsNum = max(1, min(fpsNum, 60))
         self.scanState = scanState
         self.shouldPlayFeedback = playFeedback
+        self.turnWideAngle = turnWideAngle
 
         setupCamera(supportCodeTypes: supportCodeTypes)
 
@@ -102,8 +117,10 @@ open class QRProxy: NSObject {
 //        .builtInUltraWideCamera
 //        内置超广角相机（iPhone 11 及更新机型）
 
-    
     private func systemAllDevice() -> AVCaptureDevice? {
+        guard turnWideAngle else {
+            return AVCaptureDevice.default(for: .video)
+        }
         var captureDevice: AVCaptureDevice?
         /// 获取超广角、长焦、普通相机的结合体
         /// 不能获取所有的相机，会导致手机持续扫码的时候，发热严重

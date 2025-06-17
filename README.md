@@ -28,6 +28,8 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 8.support custom identification type
 
+9.support turn WideAngle
+
 ## Installation
 
 QRScan is available through [CocoaPods](https://cocoapods.org). To install
