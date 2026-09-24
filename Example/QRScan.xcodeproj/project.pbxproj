@@ -7,14 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		24426EAFA86973843668C7D3 /* ManualTestChecklist.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C638AFF293A82BF3A75E21 /* ManualTestChecklist.swift */; };
+		33B1C2110578F313FD054F3A /* QRModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA765085C4414054F5644BAB /* QRModelTests.swift */; };
+		4F9ACE615525562C6955F4F1 /* QRAutoZoomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B5FF8374F8AA1816BE9BFD /* QRAutoZoomTests.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
-		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
+		6A9B07BDB951EC16AE98D4A2 /* ManualTestKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507703CC7245403AE09FCF1F /* ManualTestKitTests.swift */; };
 		8002BC003FFE6E35990E8C16 /* Pods_QRScan_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41505F77F20A296310DE7A7F /* Pods_QRScan_Example.framework */; };
+		8D9B739AA325A8296E91E6F9 /* ManualTestPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACF03D0F888AD1384A20B1B /* ManualTestPanel.swift */; };
+		9BC08F30ADC0CA71AF5295BA /* ManualTestChecklist.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C638AFF293A82BF3A75E21 /* ManualTestChecklist.swift */; };
+		B0FF50DA27A68C0A266ADE45 /* TestCodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 113C8CDD8E14CBFD5F822BEA /* TestCodeViewController.swift */; };
+		E3372391ACE346C6B0DB1BEC /* ManualTestKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407D13215F0E43E69CCAA208 /* ManualTestKit.swift */; };
 		F08D2142E7DA19755831600E /* Pods_QRScan_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FA410470E4F8AFE284B8CD0 /* Pods_QRScan_Tests.framework */; };
+		F38BB26D96C306C8E9489D38 /* ManualTestKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407D13215F0E43E69CCAA208 /* ManualTestKit.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,8 +38,11 @@
 /* Begin PBXFileReference section */
 		062BC7CF671ECD99D2F375AD /* Pods-QRScan_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QRScan_Example.release.xcconfig"; path = "Target Support Files/Pods-QRScan_Example/Pods-QRScan_Example.release.xcconfig"; sourceTree = "<group>"; };
 		0FA410470E4F8AFE284B8CD0 /* Pods_QRScan_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_QRScan_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		113C8CDD8E14CBFD5F822BEA /* TestCodeViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TestCodeViewController.swift; sourceTree = "<group>"; };
 		17854A0034A710D93D9A3C41 /* LinnoQRScan.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LinnoQRScan.podspec; path = ../LinnoQRScan.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		407D13215F0E43E69CCAA208 /* ManualTestKit.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManualTestKit.swift; sourceTree = "<group>"; };
 		41505F77F20A296310DE7A7F /* Pods_QRScan_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_QRScan_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		507703CC7245403AE09FCF1F /* ManualTestKitTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManualTestKitTests.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* QRScan_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QRScan_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -41,9 +52,12 @@
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		607FACE51AFB9204008FA782 /* QRScan_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QRScan_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
+		6ACF03D0F888AD1384A20B1B /* ManualTestPanel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManualTestPanel.swift; sourceTree = "<group>"; };
 		6F2ED39A654ADD8ED8DECD90 /* Pods-QRScan_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QRScan_Tests.debug.xcconfig"; path = "Target Support Files/Pods-QRScan_Tests/Pods-QRScan_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		76BAFE3CA3B56832F980EAFC /* Pods-QRScan_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QRScan_Tests.release.xcconfig"; path = "Target Support Files/Pods-QRScan_Tests/Pods-QRScan_Tests.release.xcconfig"; sourceTree = "<group>"; };
+		90B5FF8374F8AA1816BE9BFD /* QRAutoZoomTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QRAutoZoomTests.swift; sourceTree = "<group>"; };
+		AA765085C4414054F5644BAB /* QRModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QRModelTests.swift; sourceTree = "<group>"; };
+		B0C638AFF293A82BF3A75E21 /* ManualTestChecklist.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ManualTestChecklist.swift; sourceTree = "<group>"; };
 		D6FBA4478D4DAF6D54A86F34 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		E2FA26F8CC9CB0D68B78F018 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		FDF4B662EB4699F132BE0750 /* Pods-QRScan_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-QRScan_Example.debug.xcconfig"; path = "Target Support Files/Pods-QRScan_Example/Pods-QRScan_Example.debug.xcconfig"; sourceTree = "<group>"; };
@@ -110,6 +124,10 @@
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
+				407D13215F0E43E69CCAA208 /* ManualTestKit.swift */,
+				B0C638AFF293A82BF3A75E21 /* ManualTestChecklist.swift */,
+				6ACF03D0F888AD1384A20B1B /* ManualTestPanel.swift */,
+				113C8CDD8E14CBFD5F822BEA /* TestCodeViewController.swift */,
 			);
 			name = "Example for QRScan";
 			path = QRScan;
@@ -126,8 +144,10 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				607FACEB1AFB9204008FA782 /* Tests.swift */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
+				90B5FF8374F8AA1816BE9BFD /* QRAutoZoomTests.swift */,
+				AA765085C4414054F5644BAB /* QRModelTests.swift */,
+				507703CC7245403AE09FCF1F /* ManualTestKitTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -293,11 +313,11 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-QRScan_Example/Pods-QRScan_Example-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/QRScan/QRScan.framework",
+				"${BUILT_PRODUCTS_DIR}/LinnoQRScan/LinnoQRScan.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/QRScan.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LinnoQRScan.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -353,6 +373,10 @@
 			files = (
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				E3372391ACE346C6B0DB1BEC /* ManualTestKit.swift in Sources */,
+				9BC08F30ADC0CA71AF5295BA /* ManualTestChecklist.swift in Sources */,
+				8D9B739AA325A8296E91E6F9 /* ManualTestPanel.swift in Sources */,
+				B0FF50DA27A68C0A266ADE45 /* TestCodeViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,7 +384,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				607FACEC1AFB9204008FA782 /* Tests.swift in Sources */,
+				4F9ACE615525562C6955F4F1 /* QRAutoZoomTests.swift in Sources */,
+				33B1C2110578F313FD054F3A /* QRModelTests.swift in Sources */,
+				F38BB26D96C306C8E9489D38 /* ManualTestKit.swift in Sources */,
+				24426EAFA86973843668C7D3 /* ManualTestChecklist.swift in Sources */,
+				6A9B07BDB951EC16AE98D4A2 /* ManualTestKitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
