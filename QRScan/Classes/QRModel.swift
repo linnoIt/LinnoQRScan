@@ -35,15 +35,25 @@ public enum QRState: Int {
 }
 
 struct QRModel {
-    static func isAuther() -> Bool {
-        let status = AVCaptureDevice.authorizationStatus(for: .video)
-        guard status == .authorized || status == .notDetermined else {
+    /// 确保相机权限可用。
+    ///
+    /// - 已授权：同步回调 `true`。
+    /// - 未决定：触发系统授权弹窗，结果在主线程回调。
+    /// - 已拒绝 / 受限：主线程弹出引导弹窗，并回调 `false`。
+    static func ensureCameraAuthorization(_ completion: @escaping (Bool) -> Void) {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            completion(true)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async { completion(granted) }
+            }
+        default:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 showPermissionAlert()
+                completion(false)
             }
-            return false
         }
-        return true
     }
 
     private static func showPermissionAlert() {
@@ -110,6 +120,7 @@ struct QRModel {
         }
     }
 
+    /// 注意：当前版本无任何调用点，旋转适配尚未接入，保留待用。
     static func deviceOrientation(connection: AVCaptureConnection) -> UIDeviceOrientation {
         return connection.isVideoOrientationSupported ? UIDevice.current.orientation : .unknown
     }
