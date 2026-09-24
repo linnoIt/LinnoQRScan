@@ -4,24 +4,24 @@ PODS:
   - FBSnapshotTestCase/Core (2.1.4)
   - FBSnapshotTestCase/SwiftSupport (2.1.4):
     - FBSnapshotTestCase/Core
-  - QRScan (0.1.0)
+  - LinnoQRScan (0.2.7)
 
 DEPENDENCIES:
   - FBSnapshotTestCase (~> 2.1.4)
-  - QRScan (from `../`)
+  - LinnoQRScan (from `../`)
 
 SPEC REPOS:
   trunk:
     - FBSnapshotTestCase
 
 EXTERNAL SOURCES:
-  QRScan:
+  LinnoQRScan:
     :path: "../"
 
 SPEC CHECKSUMS:
   FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
-  QRScan: 41844ed643cf5bc14f382bc2e91e2c25417bab92
+  LinnoQRScan: 1ee25d6952a5288a160e80286a1c2a5873aa825b
 
-PODFILE CHECKSUM: 6584b4d9eb4dd36c4cc1fb38564ee2b3738b9d22
+PODFILE CHECKSUM: defe0b93db83fadcb5f7b6c8367451d8cb70c2ef
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.16.2

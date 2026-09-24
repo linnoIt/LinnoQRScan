@@ -26,11 +26,9 @@ DerivedData
 
 Carthage/Build
 
-# We recommend against adding the Pods directory to your .gitignore. However
-# you should judge for yourself, the pros and cons are mentioned at:
-# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-ignore-the-pods-directory-in-source-control
-# 
-# Note: if you ignore the Pods directory, make sure to uncomment
-# `pod install` in .travis.yml
-#
-# Pods/
+# Pods/ 为 `pod install` 生成的构建目录，不入库。
+# 克隆仓库后请先在 Example 目录执行一次 `pod install`（见 README）。
+Pods/
+
+# 本地工作数据（AI 协作工具的会话记录等），不入库。
+.workbuddy/

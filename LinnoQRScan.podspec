@@ -8,8 +8,8 @@
 
 Pod::Spec.new do |s|
   s.name             = 'LinnoQRScan'
-  s.version          = '0.2.6'
-  s.summary          = 'A short description of LinnoQRScan.'
+  s.version          = '0.2.7'
+  s.summary          = '基于 AVCaptureSession 的二维码 / 条码 / 人体识别组件，支持扫描区域裁剪、多帧择优、自动变焦与手电控制。'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,7 +18,15 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+LinnoQRScan 是一个轻量的 iOS 扫描组件，对 AVCaptureSession / AVMetadataOutput 做了开箱即用的封装：
+
+- 支持二维码、一维条码，以及人体 / 猫狗识别（Bodies 需要 iOS 13 及以上）
+- scanState 可用于组合识别类型，supportCodeTypes 可完全自定义
+- 支持指定预览 bounds 与扫描区域 scanFrame
+- 支持多帧择优（fpsNum >= 2 时在预览上绘制识别框，点击框回调结果）
+- 支持手动变焦与自动变焦（按码在预览中的占比自动推近 / 拉远）
+- 支持手电控制、暂停 / 恢复识别
+- 同时提供 Swift 与 Objective-C 两套初始化入口
                        DESC
 
   s.homepage         =  'https://github.com/linnoIt/LinnoQRScan'

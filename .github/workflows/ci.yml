@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: 构建与单元测试
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 显示工具链版本
+        run: |
+          xcodebuild -version
+          pod --version
+
+      - name: 安装 CocoaPods 依赖
+        run: pod install --project-directory=Example
+
+      # 注意：可用模拟器机型与系统版本随 runner 镜像变化。
+      # 若此处报「Unable to find a device matching the provided destination specifier」，
+      # 先跑 `xcodebuild -showdestinations -workspace Example/QRScan.xcworkspace -scheme QRScan-Example`
+      # 查到当前镜像上的合法目的地，再改这一行。
+      - name: 运行单元测试
+        run: |
+          xcodebuild test \
+            -workspace Example/QRScan.xcworkspace \
+            -scheme QRScan-Example \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=18.0' \
+            -enableCodeCoverage YES \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: 校验 podspec
+        run: pod lib lint LinnoQRScan.podspec --allow-warnings

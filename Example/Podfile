@@ -1,13 +1,23 @@
 use_frameworks!
 
-platform :ios, '10.0'
+platform :ios, '12.0'
 
 target 'QRScan_Example' do
-  pod 'QRScan', :path => '../'
+  pod 'LinnoQRScan', :path => '../'
 
   target 'QRScan_Tests' do
     inherit! :search_paths
 
     pod 'FBSnapshotTestCase' , '~> 2.1.4'
+  end
+end
+
+# Xcode 15 起 SDK 不再提供 libarclite，部署目标低于 iOS 12 的 pod 会在链接阶段失败
+# （这里典型的是仍声明 8.0 的 FBSnapshotTestCase）。统一抬到与 podspec 一致的 12.0。
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+    end
   end
 end
