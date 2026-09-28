@@ -4,6 +4,7 @@
 [![Version](https://img.shields.io/cocoapods/v/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
 [![License](https://img.shields.io/cocoapods/l/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
 [![Platform:iOS 12.0](https://img.shields.io/cocoapods/p/LinnoQRScan.svg?style=flat)](https://cocoapods.org/pods/LinnoQRScan)
+[![SwiftPM](https://img.shields.io/badge/SwiftPM-compatible-brightgreen?style=flat-square)](#安装)
 
 基于 `AVCaptureSession` / `AVMetadataOutput` 的轻量扫描组件，支持二维码、一维条码与人体 / 猫狗识别。
 
@@ -28,6 +29,29 @@
 - 相机权限描述（`NSCameraUsageDescription`），首次调用时会弹出系统授权框
 
 ## 安装
+
+支持 **CocoaPods** 与 **Swift Package Manager** 两种方式，**在同一个工程里二选一**。
+两条渠道共用同一份源码与同一套版本号（同一个版本号 = 同一份代码）。
+
+> ⚠️ 不要在同一个 target 里同时用 pod 和 SPM 引入本库：两者生成同一个模块 `LinnoQRScan`，会冲突。
+
+### Swift Package Manager
+
+Xcode → `File` → `Add Package Dependencies…`，填入仓库地址：
+
+```
+https://github.com/linnoIt/LinnoQRScan.git
+```
+
+或在 `Package.swift` 中声明依赖：
+
+```swift
+.package(url: "https://github.com/linnoIt/LinnoQRScan.git", from: "0.2.7")
+```
+
+> SPM **从 0.2.7 起**支持。更早的 tag 里没有 `Package.swift`，SPM 拉不到。
+
+### CocoaPods
 
 LinnoQRScan is available through [CocoaPods](https://cocoapods.org). To install
 it, simply add the following line to your Podfile:
@@ -88,11 +112,48 @@ open QRScan.xcworkspace
 
 ## 测试
 
+CocoaPods 渠道（Example 工程，含人工测试台）：
+
 ```bash
 cd Example
 xcodebuild test -workspace QRScan.xcworkspace -scheme QRScan-Example \
   -destination 'platform=iOS Simulator,name=iPhone 15'
 ```
+
+SPM 渠道（直接对 Package 跑，24 例）：
+
+```bash
+xcodebuild test -scheme LinnoQRScan \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0' \
+  CODE_SIGNING_ALLOWED=NO
+```
+
+> 该库依赖 UIKit / AVFoundation，**不能用 `swift test` / `swift build`**（那只面向 macOS 宿主机），必须用 `xcodebuild` 指定 iOS 模拟器。
+
+## 发版（双渠道）
+
+两条渠道共用**同一个 git tag**：SPM 的版本来自 tag，podspec 的 `:tag => s.version.to_s` 也指向它。
+因此发版顺序是固定的——**先打 tag，再按需发布各渠道**：
+
+```bash
+# 1) 发版前预检：podspec 版本 / 模块名 / 部署目标 是否与 Package.swift 自洽
+Scripts/check-release-consistency.sh --worktree
+
+# 2) 打 tag 并推送（这一步同时解锁 SPM 与 CocoaPods 两条渠道）
+git tag 0.2.7 && git push origin 0.2.7
+
+# 3) 此时 SPM 已可用；CocoaPods 渠道在你想发布时再推
+pod trunk push LinnoQRScan.podspec
+
+# 4) 发版终检
+Scripts/check-release-consistency.sh 0.2.7
+```
+
+注意：
+
+- **tag 一旦推送就不可移动**。SPM 按 tag 缓存，改 tag 会让所有使用方解析失败；有改动就发下一个版本号。
+- 两条渠道的"当前最新可获取版本"可以短暂不同（如 SPM 已到 `0.2.7`、pod 还停在 `0.2.6`），但**同一个版本号在两边的代码永远一致**。
+- 改了 `s.version` 却没打 tag（或反之）会被 `Scripts/check-release-consistency.sh` 拦下。
 
 ## Author
 
