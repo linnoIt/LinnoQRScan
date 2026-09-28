@@ -28,16 +28,18 @@ jobs:
       - name: 安装 CocoaPods 依赖
         run: pod install --project-directory=Example
 
-      # 注意：可用模拟器机型与系统版本随 runner 镜像变化。
-      # 若此处报「Unable to find a device matching the provided destination specifier」，
-      # 先跑 `xcodebuild -showdestinations -workspace Example/QRScan.xcworkspace -scheme QRScan-Example`
-      # 查到当前镜像上的合法目的地，再改这一行。
+      # 不硬编码机型/系统版本：runner 镜像随 Xcode 升级会更换可用模拟器，
+      # 写死 "name=iPhone 15,OS=18.0" 会在镜像更新后报 "Unable to find a device..."。
+      - name: 选择可用的 iOS 模拟器
+        id: sim
+        run: echo "destination=$(Scripts/pick-ios-simulator.sh)" >> "$GITHUB_OUTPUT"
+
       - name: 运行单元测试
         run: |
           xcodebuild test \
             -workspace Example/QRScan.xcworkspace \
             -scheme QRScan-Example \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=18.0' \
+            -destination '${{ steps.sim.outputs.destination }}' \
             -enableCodeCoverage YES \
             CODE_SIGNING_ALLOWED=NO
 
@@ -58,14 +60,18 @@ jobs:
         run: Scripts/check-release-consistency.sh --worktree
 
       # 本库依赖 UIKit / AVFoundation，不能用 swift test（那只面向 macOS 宿主机），
-      # 必须用 xcodebuild 指定 iOS 模拟器；目的地机型/系统同样随镜像变化，报错时先 -showdestinations。
+      # 必须用 xcodebuild 指定 iOS 模拟器。目的地由脚本探测，不硬编码。
       # 另注：仓库根不能存在 _Pods.xcodeproj（哪怕只是符号链接），否则 xcodebuild 会把 Pods 工程
       # 当成主工程，导致这里的 -scheme LinnoQRScan 解析不到本包。
+      - name: 选择可用的 iOS 模拟器
+        id: sim
+        run: echo "destination=$(Scripts/pick-ios-simulator.sh)" >> "$GITHUB_OUTPUT"
+
       - name: 运行 SPM 单元测试
         run: |
           xcodebuild test \
             -scheme LinnoQRScan \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0' \
+            -destination '${{ steps.sim.outputs.destination }}' \
             CODE_SIGNING_ALLOWED=NO
 
   # ---------------- 打 tag 时的发版闸门 ----------------
