@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ main ]
+    tags: [ '*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -12,8 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ---------------- CocoaPods 渠道 ----------------
   test:
-    name: 构建与单元测试
+    name: CocoaPods 渠道（构建与单元测试）
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,4 +42,44 @@ jobs:
             CODE_SIGNING_ALLOWED=NO
 
       - name: 校验 podspec
+        run: pod lib lint LinnoQRScan.podspec --allow-warnings
+
+  # ---------------- Swift Package Manager 渠道 ----------------
+  spm:
+    name: SPM 渠道（构建与单元测试）
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 解析 Package 结构
+        run: swift package dump-package > /dev/null
+
+      - name: 版本自洽性检查（podspec ↔ Package.swift）
+        run: Scripts/check-release-consistency.sh --worktree
+
+      # 本库依赖 UIKit / AVFoundation，不能用 swift test（那只面向 macOS 宿主机），
+      # 必须用 xcodebuild 指定 iOS 模拟器；目的地机型/系统同样随镜像变化，报错时先 -showdestinations。
+      # 另注：仓库根不能存在 _Pods.xcodeproj（哪怕只是符号链接），否则 xcodebuild 会把 Pods 工程
+      # 当成主工程，导致这里的 -scheme LinnoQRScan 解析不到本包。
+      - name: 运行 SPM 单元测试
+        run: |
+          xcodebuild test \
+            -scheme LinnoQRScan \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0' \
+            CODE_SIGNING_ALLOWED=NO
+
+  # ---------------- 打 tag 时的发版闸门 ----------------
+  release-check:
+    name: 发版一致性（tag）
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 需要完整 tag 信息
+
+      - name: tag 与两条渠道版本自洽
+        run: Scripts/check-release-consistency.sh "${GITHUB_REF_NAME}"
+
+      - name: podspec 可发布性（pod lib lint）
         run: pod lib lint LinnoQRScan.podspec --allow-warnings
