@@ -291,13 +291,13 @@ final class ManualTestKitTests: XCTestCase {
             total += items.count
         }
         XCTAssertEqual(total, ManualTestChecklist.all.count, "按面筛选后数量与总表不一致")
-        XCTAssertEqual(ManualTestArea.allCases.count, 6, "面数量变化时请同步清单")
+        XCTAssertEqual(ManualTestArea.allCases.count, 7, "面数量变化时请同步清单")
     }
 
     /// 本轮改动的面至少各有 3 条覆盖，防止以后删测试点把验证面挖空。
     func testChangedAreasHaveEnoughCoverage() {
         let minimum = 3
-        for area in [ManualTestArea.autoZoom, .lifecycle, .performance] {
+        for area in [ManualTestArea.autoZoom, .lifecycle, .layering, .performance] {
             XCTAssertGreaterThanOrEqual(ManualTestChecklist.items(in: area).count, minimum,
                                         "\(area.title) 的测试点少于 \(minimum) 条")
         }
@@ -318,7 +318,8 @@ final class ManualTestKitTests: XCTestCase {
             ("授权", "权限流程"),
             ("deinit", "释放时摘除预览层"),
             ("videoMaxZoomFactor", "拉近上限钳制"),
-            ("最宽", "一帧多码取最宽的码")
+            ("最宽", "一帧多码取最宽的码"),
+            ("insertSublayer", "预览层插入最底层、不被覆盖层依赖时序")
         ]
 
         for anchor in anchors {

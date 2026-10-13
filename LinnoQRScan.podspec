@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'LinnoQRScan'
-  s.version          = '0.2.7'
+  s.version          = '0.2.8'
   s.summary          = '基于 AVCaptureSession 的二维码 / 条码 / 人体识别组件，支持扫描区域裁剪、多帧择优、自动变焦与手电控制。'
 
 # This description is used to generate tags and improve search results.

@@ -22,6 +22,7 @@ enum ManualTestArea: String, CaseIterable {
     case permission
     case scanState
     case lifecycle
+    case layering
     case performance
 
     var code: String {
@@ -31,6 +32,7 @@ enum ManualTestArea: String, CaseIterable {
         case .permission: return "PM"
         case .scanState: return "SS"
         case .lifecycle: return "LC"
+        case .layering: return "LY"
         case .performance: return "PF"
         }
     }
@@ -42,6 +44,7 @@ enum ManualTestArea: String, CaseIterable {
         case .permission: return "权限流程"
         case .scanState: return "识别类型过滤"
         case .lifecycle: return "线程与释放"
+        case .layering: return "视图层级"
         case .performance: return "性能观测"
         }
     }
@@ -54,6 +57,7 @@ enum ManualTestArea: String, CaseIterable {
         case .permission: return "上一轮修复：未决定权限时不再静默黑屏"
         case .scanState: return "上一轮修复：displayResults 不再硬编码 .All"
         case .lifecycle: return "本轮修复：释放后摘除预览层并停相机"
+        case .layering: return "本轮修复：预览层改为插入最底层，不再依赖宿主提层时序"
         case .performance: return "本轮排查：装配移出主线程 / 检测类型数量的代价"
         }
     }
@@ -73,7 +77,7 @@ struct ManualTestItem: Equatable {
 
 enum ManualTestChecklist {
 
-    static let all: [ManualTestItem] = autoZoom + multiFrame + permission + scanState + lifecycle + performance
+    static let all: [ManualTestItem] = autoZoom + multiFrame + permission + scanState + lifecycle + layering + performance
 
     static func items(in area: ManualTestArea) -> [ManualTestItem] {
         all.filter { $0.area == area }
@@ -252,6 +256,29 @@ enum ManualTestChecklist {
             title: "回调闭包不持有宿主（否则释放不掉）",
             howTo: "点「释放 proxy」，确认控制台是否打印 `QRProxy -> deinit`。",
             expected: "必定打印。若未打印，说明 outPut 闭包强捕获了宿主控制器 —— 这是使用方最常见的循环引用，不是库的问题。")
+    ]
+
+    // MARK: - 视图层级
+
+    private static let layering: [ManualTestItem] = [
+        ManualTestItem(
+            id: "LY-01",
+            area: .layering,
+            title: "覆盖层不被预览层遮挡（本轮修复点）",
+            howTo: "把 `showView` 传成**与覆盖层同一个视图**（App 里就是这样：`showView: view`，蒙版 / 按钮也 addSubview 到 `view`），进入扫描页后立刻观察蒙版与返回、手电按钮。",
+            expected: "蒙版压暗正常（只留中心方框透光）、返回与手电按钮可见可点。修复前预览层会盖住覆盖层：框没了、只剩全屏画面、按钮看不见。"),
+        ManualTestItem(
+            id: "LY-02",
+            area: .layering,
+            title: "预览层恒在最底层，与宿主提层顺序无关",
+            howTo: "在 `QRProxy(...)` 返回后立刻对覆盖层调用 `bringSubviewToFront(_:)`（不要设 zPosition），反复重建 proxy 10 次。",
+            expected: "每次重建后覆盖层都在画面之上，不会出现第一次正常、之后偶发被盖住。预览层用 insertSublayer(at: 0) 插入，位置与宿主的提层动作无先后依赖。"),
+        ManualTestItem(
+            id: "LY-03",
+            area: .layering,
+            title: "预览层插入最底层不破坏释放清理",
+            howTo: "点「释放 proxy」，确认预览层被摘除、画面消失。",
+            expected: "预览画面立即消失、控制台打印 `QRProxy -> deinit`。摘层走的是直接引用（removeFromSuperlayer），不依赖子层顺序，插到 index 0 不影响释放。")
     ]
 
     // MARK: - 性能观测

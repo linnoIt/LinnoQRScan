@@ -46,7 +46,7 @@ https://github.com/linnoIt/LinnoQRScan.git
 或在 `Package.swift` 中声明依赖：
 
 ```swift
-.package(url: "https://github.com/linnoIt/LinnoQRScan.git", from: "0.2.7")
+.package(url: "https://github.com/linnoIt/LinnoQRScan.git", from: "0.2.8")
 ```
 
 > SPM **从 0.2.7 起**支持。更早的 tag 里没有 `Package.swift`，SPM 拉不到。
@@ -100,6 +100,7 @@ proxy.isAutoFocusZoomEnabled = true
 
 - `stop()` 是**异步**的：它把停止动作投递到内部串行队列后立即返回，不等待设备真正停止。不要假设 "`stop()` 返回 = 相机已释放"。
 - 开自动变焦 + 多帧模式（`fpsNum >= 2`）时，变焦动画会让已绘制的识别框与码之间产生轻微偏移，下一次识别结果产出时会被重绘。
+- **预览层恒挂在 `showView` 的最底层**（自 `0.2.8` 起）。装配相机要等系统授权回调，是**异步**的，因此 `QRProxy(...)` 返回时预览层尚未挂上；如果你把蒙版、按钮等覆盖层直接加在**同一个 `showView`** 上并调用 `bringSubviewToFront(_:)`，即使不设 `zPosition` 也能正常显示。若希望层级完全不受挂载时序影响，可显式给覆盖层设 `layer.zPosition = 1`（预览层为 `0`）。
 
 ## Example
 
@@ -140,13 +141,13 @@ xcodebuild test -scheme LinnoQRScan \
 Scripts/check-release-consistency.sh --worktree
 
 # 2) 打 tag 并推送（这一步同时解锁 SPM 与 CocoaPods 两条渠道）
-git tag 0.2.7 && git push origin 0.2.7
+git tag 0.2.8 && git push origin 0.2.8
 
 # 3) 此时 SPM 已可用；CocoaPods 渠道在你想发布时再推
 pod trunk push LinnoQRScan.podspec
 
 # 4) 发版终检
-Scripts/check-release-consistency.sh 0.2.7
+Scripts/check-release-consistency.sh 0.2.8
 ```
 
 注意：

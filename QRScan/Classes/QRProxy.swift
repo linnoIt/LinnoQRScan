@@ -149,7 +149,10 @@ open class QRProxy: NSObject {
         preview.videoGravity = .resizeAspectFill
         preview.frame = bounds
         videoPreviewLayer = preview
-        showView?.layer.addSublayer(preview)
+        // 预览层恒插到最底层：装配相机是异步的（授权回调 + 主队列），
+        // 宿主通常在本方法返回后立刻把蒙版、按钮等覆盖层提到最前。
+        // 若用 addSublayer，预览层会追加到末尾、反过来盖住那些覆盖层。
+        showView?.layer.insertSublayer(preview, at: 0)
 
         let interestRectSource = scanFrame ?? bounds
         sessionQueue.async { [weak self] in
